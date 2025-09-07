@@ -1,7 +1,8 @@
-// Конфигурационен скрипт – Етап 10: лек рутер (екрани 1→2→3) + запазена стара логика за „детайл“
-// Екран 1: Продукти (от скрийншота: ABALPR, ABBS, ABPL, …)
-// Екран 2: Типове платформи за избрания продукт (за ABPL показваме текущия index-подобен изглед)
-// Екран 3: Детайл/Конфигуратор (същият „виж още“ екран) – използва наличния model-viewer и табове
+// Конфигурационен скрипт – Етап 11: добавен Екран 0 (Главно меню) + лек рутер (0→1→2→3) 
+// 0: Главно меню („Продукти / Бластиране / За нас / Контакти“)
+// 1: Продукти (от скрийншота: ABALPR, ABBS, ABPL, …)
+// 2: Типове платформи за избрания продукт (за ABPL показваме текущия index-подобен изглед)
+// 3: Детайл/Конфигуратор (същият „виж още“ екран) – използва наличния model-viewer и табове
 //
 // ВАЖНО: Не пипаме пътищата в HTML. Всичко тук е самодостатъчно и обратно съвместимо със script.js.
 
@@ -42,34 +43,47 @@ const IMG_ROOT = resolveImgRoot();
 // ------------------------------
 // Мини „рутер“
 const AppState = {
-  screen: 1,            // 1=Продукти, 2=Платформи, 3=Детайл
+  screen: 0,            // 0=Главно меню, 1=Продукти, 2=Платформи, 3=Детайл, 4=Статична страница
   productId: null,
-  platformId: null
+  platformId: null,
+  pageId: null          // за статичните страници (blast/about/contacts)
 };
 
 function goTo(screen, params={}){
   AppState.screen = screen;
   Object.assign(AppState, params);
   // Хеш за лесно връщане/рефреш
-  const hash = new URLSearchParams({ s:String(screen), p:AppState.productId||'', f:AppState.platformId||'' });
+  const hash = new URLSearchParams({ 
+    s:String(screen), p:AppState.productId||'', f:AppState.platformId||'', pg:AppState.pageId||'' 
+  });
   location.hash = hash.toString();
   render();
 }
 
 window.addEventListener('hashchange', () => {
   const sp = new URLSearchParams(location.hash.replace(/^#/, ''));
-  const s = Number(sp.get('s')||'1');
+  const s = Number(sp.get('s')||'0');
   const p = sp.get('p') || null;
   const f = sp.get('f') || null;
-  AppState.screen = [1,2,3].includes(s)?s:1;
+  const pg = sp.get('pg') || null;
+  AppState.screen = [0,1,2,3,4].includes(s)?s:0;
   AppState.productId = p || null;
   AppState.platformId = f || null;
+  AppState.pageId = pg || null;
   render();
 });
-
+ 
 // ------------------------------
 // Данни (ти можеш спокойно да сменяш текстове/картинки)
 const DATA = {
+  // Екран 0 – главно меню
+  mainMenu: [
+    { id:'products', title:'REALMET', topic:'Продукти', des:'Гама решения за мултилифт системи', preview:`${IMG_ROOT}/menu/products/cover.png`, cta:'Виж повече' },
+    { id:'blast',    title:'REALMET', topic:'Бластиране', des:'Подготовка на повърхности, бластиране и покрития', preview:`${IMG_ROOT}/menu/blast/cover.png`, cta:'Виж повече' },
+    { id:'about',    title:'REALMET', topic:'За нас', des:'Кратко представяне на компанията', preview:`${IMG_ROOT}/menu/about/cover.png`, cta:'Виж повече' },
+    { id:'contacts', title:'REALMET', topic:'Контакти', des:'Свържете се с нас', preview:`${IMG_ROOT}/menu/contacts/cover.png`, cta:'Виж повече' }
+  ],
+
   // Екран 1 – продукти (изображенията са примерни пътища, подмени ги когато имаш готови)
   products: [
     { id:'ABALPR', title:'Алуминиева притча', topic:'Продукт', preview:`${IMG_ROOT}/products/ABALPR/cover.png`, des:'Притча със алуминиеви странични капаци за система мултилифт са изработени съгласно DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
@@ -84,15 +98,20 @@ const DATA = {
 
   // Екран 2 – типове платформи за даден продукт (пример: ABPL → текущите 5 типа)
   platformsByProduct: {
-    // Специално условие по изискването: при ABPL показваме „сегашния index“ (типове платформи)
     'ABPL': [
-      { id:'platform-standard',   title:'Платформа', topic:'Стандартна',         preview:`${IMG_ROOT}/platform1.png`, des:'Надеждна, базова платформа.' },
-      { id:'platform-bevel',      title:'Платформа', topic:'Скосена',            preview:`${IMG_ROOT}/platform2.png`, des:'Скосена предна част.' },
-      { id:'platform-bevel-groove',title:'Платформа', topic:'Скосена с вдлъбнатини', preview:`${IMG_ROOT}/platform3.png`, des:'Допълнителни вдлъбнатини.' },
-      { id:'platform-ecco7',      title:'Платформа', topic:'ECCO ALU 7',         preview:`${IMG_ROOT}/platform4.png`, des:'Лек алуминиев вариант.' },
-      { id:'platform-ecco7b',     title:'Платформа', topic:'ECCO ALU 7',         preview:`${IMG_ROOT}/platform5.png`, des:'Алтернативна конфигурация.' }
+      { id:'platform-standard',    title:'Платформа', topic:'Стандартна',             preview:`${IMG_ROOT}/platform1.png`, des:'Надеждна, базова платформа.' },
+      { id:'platform-bevel',       title:'Платформа', topic:'Скосена',                preview:`${IMG_ROOT}/platform2.png`, des:'Скосена предна част.' },
+      { id:'platform-bevel-groove',title:'Платформа', topic:'Скосена с вдлъбнатини',  preview:`${IMG_ROOT}/platform3.png`, des:'Допълнителни вдлъбнатини.' },
+      { id:'platform-ecco7',       title:'Платформа', topic:'ECCO ALU 7',             preview:`${IMG_ROOT}/platform4.png`, des:'Лек алуминиев вариант.' },
+      { id:'platform-ecco7b',      title:'Платформа', topic:'ECCO ALU 7',             preview:`${IMG_ROOT}/platform5.png`, des:'Алтернативна конфигурация.' }
     ]
-    // За останалите продукти можеш да добавиш различни списъци; ако липсва – ще ползваме базов fallback
+  },
+
+  // Екран 4 – статични страници (примерно изображение + кратък текст)
+  pages: {
+    blast:    { title:'Бластиране', img:`${IMG_ROOT}/menu/blast/cover.png`,    text:'Промишлено бластиране и покрития. Свържете се с нас за оферта.' },
+    about:    { title:'За нас',     img:`${IMG_ROOT}/menu/about/cover.png`,    text:'REALMET – кратко представяне и мисия.' },
+    contacts: { title:'Контакти',   img:`${IMG_ROOT}/menu/contacts/cover.png`, text:'Телефон, имейл и адрес за връзка.' }
   }
 };
 
@@ -107,9 +126,11 @@ function getPlatformsForProduct(pid){
 // ------------------------------
 // Рендер функции
 function render(){
+  if (AppState.screen === 0) return renderScreen0();
   if (AppState.screen === 1) return renderScreen1();
   if (AppState.screen === 2) return renderScreen2(AppState.productId);
   if (AppState.screen === 3) return renderScreen3(AppState.productId, AppState.platformId);
+  if (AppState.screen === 4) return renderScreen4(AppState.pageId);
 }
 
 function getListEl(){ return document.querySelector('.carousel .list'); }
@@ -119,7 +140,7 @@ function hydrateCarousel(items){
   if (!list) return;
   list.innerHTML = '';
 
-  items.forEach((it, idx) => {
+  items.forEach((it) => {
     const item = document.createElement('div');
     item.className = 'item' + (it.hasViewer ? ' has-viewer' : '');
     item.dataset.id = it.id || '';
@@ -153,6 +174,19 @@ function hydrateCarousel(items){
 
   // след динамичен рендер – маркираме активния (втори елемент)
   try { markActiveItem && markActiveItem(); } catch(e){}
+}
+
+function renderScreen0(){
+  const items = DATA.mainMenu.map(m => ({
+    id: m.id,
+    title: m.title,
+    topic: m.topic,
+    des: m.des||'',
+    preview: m.preview,
+    cta: m.cta||'Виж повече'
+  }));
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
 }
 
 function renderScreen1(){
@@ -224,12 +258,23 @@ function renderScreen3(pid, fid){
 
   hydrateCarousel(items);
 
-  // имитираме текущия „showDetail“ режим
   const car = document.querySelector('.carousel');
   if (car) car.classList.add('showDetail');
 
-  // Инициализираме табовете и снимките
   try { prepareDOM(); window.showTab(0); generateConfig(true); } catch(e){}
+}
+
+function renderScreen4(pageId){
+  const page = DATA.pages[pageId];
+  if(!page){
+    // fallback към главно меню
+    return goTo(0);
+  }
+  const items = [
+    { id: pageId, title:'REALMET', topic: page.title, des: page.text||'', preview: page.img, cta:'Свържи се', detailHTML:'' }
+  ];
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
 }
 
 // ------------------------------
@@ -245,16 +290,21 @@ function renderScreen3(pid, fid){
 
     const id = card.dataset.id;
 
-    if (AppState.screen === 1) {
-      // Избор на продукт
-      goTo(2, { productId: id });
+    if (AppState.screen === 0) {
+      // Основно меню
+      if (id === 'products') return goTo(1);
+      return goTo(4, { pageId: id });
+    }
+    else if (AppState.screen === 1) {
+      // Избор на продукт → типове платформи
+      return goTo(2, { productId: id });
     }
     else if (AppState.screen === 2) {
-      // Избор на платформа
-      goTo(3, { platformId: id });
+      // Избор на платформа → детайл
+      return goTo(3, { platformId: id });
     }
     else if (AppState.screen === 3) {
-      // В детайла – можем да отворим модала или да игнорираме
+      // В детайла – оставяме текущото поведение (поръчай/модал и т.н.)
     }
   });
 })();
@@ -313,16 +363,18 @@ window.showTab = function(i){
   if (i === 0) initAutoReload();
 };
 
-// DOM готовност → стартираме от екран 1 (продукти) или от хеш
+// DOM готовност → стартираме от екран 0 (главно меню) или от хеш
 (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot());
 function boot(){
   const sp = new URLSearchParams(location.hash.replace(/^#/, ''));
-  const s = Number(sp.get('s')||'1');
+  const s = Number(sp.get('s')||'0');
   const p = sp.get('p') || null;
   const f = sp.get('f') || null;
-  AppState.screen = [1,2,3].includes(s)?s:1;
+  const pg = sp.get('pg') || null;
+  AppState.screen = [0,1,2,3,4].includes(s)?s:0;
   AppState.productId = p || null;
   AppState.platformId = f || null;
+  AppState.pageId = pg || null;
   render();
 }
 
