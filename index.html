@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform configuration</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="../img/favicon.png">
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+        max-height: 600px;
+        display: block;
+      }
+        body.dark {
+        background-color: #111;
+        color: #eee;
+      }
+
+      body.dark .nav-menu a,
+      body.dark .user-icon,
+      body.dark header .logo-wrapper span {
+        color: #eee;
+      }
+
+      body.dark .carousel .list .item .introduce .seeMore:hover {
+        background: #333;
+        color: #fff;
+      }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-wrapper">
+      <img src="../img/realmet-logo.png" alt="Realmet">
+      <span>REALMET</span>
+    </div>
+
+<h1 class="page-title"></h1>
+
+    <div class="nav-menu">
+      <a href="index.html">Начало</a>
+      <a href="#">Продукти</a>
+      <div class="user-menu">
+        <span class="user-icon">👤</span>
+        <div class="dropdown">
+          <a href="#">Настройки</a>
+          <a href="login.html">Изход</a>
+          <button onclick="toggleTheme()" style="display: block; padding: 10px; color: #eee; text-decoration: none;" >Смени тема</button>
+        </div>
+      </div>
+    <!--<button onclick="toggleTheme()" style="margin-left: 20px; padding: 4px 12px; cursor: pointer;">🌗</button>-->
+    </div>
+</header>
+
+<div class="carousel">
+    <div class="list">
+        <div class="item has-viewer">
+            <div class="visual">
+                <img class="preview" src="images/platform1.png" alt="Стандартна платформа">
+                    <model-viewer id="interactiveModel" class="viewer" 
+                        src="../img/7000_RAL7016_Anthracite_gray/model.glb" 
+                        camera-controls 
+                        auto-rotate 
+                        reveal="manual" 
+                        style="background: transparent;"
+                        exposure="1"
+                        shadow-intensity="1"
+                        camera-orbit="200deg 75deg 13m">
+                    </model-viewer>
+            </div>
+           
+            <div class="introduce">
+                <div class="title">Платформа</div>
+                <div class="topic">Стандартна</div>
+                <div class="des">
+                    Гъвкаво решение за вашите транспортни нужди
+                    Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.
+                </div>
+                <button class="seeMore">Виж още &#8599</button>
+            </div>
+            <div class="detail">
+                <div class="title">Стандартна</div>
+                <div class="des">
+                   Платформите намират приложение в
+                     - строителството
+                     - логистиката,
+                     - пътното поддържане
+                     - и дори в градски проекти, като създаване на подвижни зони за отдих.
+                </div>
+                
+                    <div class="main-container">
+                        <div class="config-panel">
+                          <div class="tab-labels">
+                            <button class="active" onclick="showTab(0)">Основни параметри</button>
+                            <button onclick="showTab(1)">Дъно</button>
+                            <button onclick="showTab(2)">Челна стена</button>
+                            <button onclick="showTab(3)">Вид укрепване</button>
+                          </div>
+                          <div style="flex: 1; display: flex; flex-direction: column;">
+                            <div id="tab-content" class="tab-content">
+                              <!-- Content injected by JS -->
+                            </div>
+                          </div>
+                        </div>
+                       <div class="thumb-wrap">
+                        <div class="thumbnail-row" id="thumbRow">
+                          <img src="../img/7000_RAL3000_Flame_red/view1.png" class="lightbox-trigger" data-type="image" data-src="../img/7000_RAL3000_Flame_red/view1.png">
+                          <img src="../img/7000_RAL3000_Flame_red/view2.png" class="lightbox-trigger" data-type="image" data-src="../img/7000_RAL3000_Flame_red/view2.png">
+                          <img src="../img/7000_RAL3000_Flame_red/preview_drawing.png" class="lightbox-trigger" data-type="pdf" data-src="../img/7000_RAL3000_Flame_red/drawing.pdf">
+                        </div>
+                    </div>
+                    </div>
+                    <div class="checkout">
+                        <button class="action" onclick="showOrderModal()">Поръчай</button>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="item">
+                <div class="visual">
+                    <img class="preview" src="images/platform2.png" alt="Скосена платформа">
+                </div>
+                <div class="introduce">
+                    <div class="title">Платформа</div>
+                    <div class="topic">Скосена</div>
+                    <div class="des">
+                        Гъвкаво решение за вашите транспортни нужди
+Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.
+                    </div>
+                    <button class="seeMore">Виж още &#8599</button>
+                </div>
+                <div class="detail">
+                    <div class="title">Скосена</div>
+                    <div class="des">
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor, reiciendis suscipit nobis nulla animi, modi explicabo quod corrupti impedit illo, accusantium in eaque nam quia adipisci aut distinctio порро eligendi. Reprehenderit nostrum consequuntur ea! Accusamus architecto dolores modi ducimus facilis quas voluptatibus! Tempora ratione accusantium магнам nulla tenetur autem beatae.
+                    </div>
+                    <div class="specifications">
+                        <div>
+                            <p>Used Time</p>
+                            <p>6 hours</p>
+                        </div>
+                        <div>
+                            <p>Charging port</p>
+                            <p>Type-C</p>
+                        </div>
+                        <div>
+                            <p>Compatible</p>
+                            <p>Android</p>
+                        </div>
+                        <div>
+                            <p>Bluetooth</p>
+                            <p>5.3</p>
+                        </div>
+                        <div>
+                            <p>Controlled</p>
+                            <p>Touch</p>
+                        </div>
+                    </div>
+                    <div class="checkout">
+                        <button>ADD TO CART</button>
+                        <button>CHECKOUT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item">
+                <div class="visual">
+                    <img class="preview" src="images/platform3.png" alt="Скосена с вдлъбнатини">
+                </div>
+                <div class="introduce">
+                    <div class="title">Платформа</div>
+                    <div class="topic">Скосена с вдлъбнатини</div>
+                    <div class="des">
+                        Гъвкаво решение за вашите транспортни нужди
+Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.
+                    </div>
+                    <button class="seeMore">Виж още &#8599</button>
+                </div>
+                <div class="detail">
+                    <div class="title">Скосена с вдлъбнатини</div>
+                    <div class="des">
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor, reiciendis suscipit nobis nulla animi, modi explicabo quod corrupti impedit illo, accusantium in eaque nam quia adipisci aut distinctio порро eligendi. Reprehenderit nostrum consequuntur ea! Accusamus architecto dolores modi ducimus facilis quas voluptatibus! Tempora ratione accusantium магнам nulla tenetur autem beatae.
+                    </div>
+                    <div class="specifications">
+                        <div>
+                            <p>Used Time</p>
+                            <p>6 hours</p>
+                        </div>
+                        <div>
+                            <p>Charging port</p>
+                            <p>Type-C</p>
+                        </div>
+                        <div>
+                            <p>Compatible</p>
+                            <p>Android</p>
+                        </div>
+                        <div>
+                            <p>Bluetooth</p>
+                            <p>5.3</p>
+                        </div>
+                        <div>
+                            <p>Controlled</p>
+                            <p>Touch</p>
+                        </div>
+                    </div>
+                    <div class="checkout">
+                        <button>ADD TO CART</button>
+                        <button>CHECKOUT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item">
+                <div class="visual">
+                    <img class="preview" src="images/platform4.png" alt="ECCO ALU 7">
+                </div>
+                <div class="introduce">
+                    <div class="title">Платформа</div>
+                    <div class="topic">ECCO ALU 7</div>
+                    <div class="des">
+                        Гъвкаво решение за вашите транспортни нужди
+Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.
+                    </div>
+                    <button class="seeMore">Виж още &#8599</button>
+                </div>
+                <div class="detail">
+                    <div class="title">ECCO ALU 7</div>
+                    <div class="des">
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor, reiciendis suscipit nobis nulla animi, modi explicabo quod corrupti impedit illo, accusantium in eaque nam quia adipisci aut distinctio порро eligendi. Reprehenderit nostrum consequuntur ea! Accusamus architecto dolores modi ducimus facilis quas voluptatibus! Tempora ratione accusantium магнам nulla tenetur autem beatae.
+                    </div>
+                    <div class="specifications">
+                        <div>
+                            <p>Used Time</p>
+                            <p>6 hours</p>
+                        </div>
+                        <div>
+                            <p>Charging port</p>
+                            <p>Type-C</p>
+                        </div>
+                        <div>
+                            <p>Compatible</p>
+                            <p>Android</p>
+                        </div>
+                        <div>
+                            <p>Bluetooth</p>
+                            <p>5.3</p>
+                        </div>
+                        <div>
+                            <p>Controlled</p>
+                            <p>Touch</p>
+                        </div>
+                    </div>
+                    <div class="checkout">
+                        <button>ADD TO CART</button>
+                        <button>CHECKOUT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item">
+                <div class="visual">
+                    <img class="preview" src="images/platform5.png" alt="ECCO ALU 7">
+                </div>
+                <div class="introduce">
+                    <div class="title">Платформа</div>
+                    <div class="topic">ECCO ALU 7</div>
+                    <div class="des">
+                       Гъвкаво решение за вашите транспортни нужди
+Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.
+                    </div>
+                    <button class="seeMore">Виж още &#8599</button>
+                </div>
+                <div class="detail">
+                    <div class="title">Airpod</div>
+                    <div class="des">
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor, reiciendis suscipit nobis nulla animi, modi explicabo quod corruptи impedit illo, accusantium in eaque nam quia adipisci aut distinctio порро eligendi. Reprehenderit nostrum consequuntur ea! Accusamus architecto dolores modi ducimus facilis quas voluptatibus! Tempora ratione accusantium магнам nulla tenetur autem beatae.
+                    </div>
+                    <div class="specifications">
+                        <div>
+                            <p>Used Time</p>
+                            <p>6 hours</p>
+                        </div>
+                        <div>
+                            <p>Charging port</p>
+                            <p>Type-C</p>
+                        </div>
+                        <div>
+                            <p>Compatible</p>
+                            <p>Android</p>
+                        </div>
+                        <div>
+                            <p>Bluetooth</p>
+                            <p>5.3</p>
+                        </div>
+                        <div>
+                            <p>Controlled</p>
+                            <p>Touch</p>
+                        </div>
+                    </div>
+                    <div class="checkout">
+                        <button>ADD TO CART</button>
+                        <button>CHECKOUT</button>
+                    </div>
+                </div>
+            </div>
+        <div id="orderModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center;">
+            <div style="background:#1a1a1a; padding:30px; border-radius:10px; text-align:center; color:#fff; max-width:400px;">
+              <h3>Благодарим за направената поръчка!</h3>
+              <p>Наш колега ще се свърже с вас за потвърждение.</p>
+              <button onclick="closeModal()">Затвори</button>
+            </div>
+          </div>
+        </div>
+        <div class="arrows">
+            <button id="prev"><</button>
+            <button id="next">></button>
+            <button id="back">Виж всички  &#8599</button>
+        </div>
+    </div>
+    <script>
+        function toggleTheme() {
+          document.body.classList.toggle("dark");
+        }
+    </script>
+    <script src="script.js"></script>
+    <script src="configurator.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
