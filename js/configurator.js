@@ -1,9 +1,12 @@
-// Конфигурационен скрипт – Етап 9: стабилизиране на табовете и обновяване на 3D/превюта
-// - Добавя глобално window.showTab за inline onclick в HTML
-// - Не изисква #interactiveModel (намира viewer-а и без id)
-// - Създава .thumbnail-row автоматично, ако липсва
-// - Пътищата към /img се решават чрез <link rel="icon"> (Вариант B)
+// Конфигурационен скрипт – Етап 10: лек рутер (екрани 1→2→3) + запазена стара логика за „детайл“
+// Екран 1: Продукти (от скрийншота: ABALPR, ABBS, ABPL, …)
+// Екран 2: Типове платформи за избрания продукт (за ABPL показваме текущия index-подобен изглед)
+// Екран 3: Детайл/Конфигуратор (същият „виж още“ екран) – използва наличния model-viewer и табове
+//
+// ВАЖНО: Не пипаме пътищата в HTML. Всичко тук е самодостатъчно и обратно съвместимо със script.js.
 
+// ------------------------------
+// Runtime стилове (лека помощ за оувърлей и др.)
 (function injectRuntimeStyles(){
   const id='runtime-styles';
   if(document.getElementById(id)) return;
@@ -17,27 +20,248 @@
     .viewer-overlay .stage{color:#ccc;margin-top:8px;font-size:14px}
     .thumbnail-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
     .thumbnail-row img{display:block;width:120px;height:80px;object-fit:cover;cursor:pointer;border:1px solid #333;border-radius:6px}
-    @media (max-width: 768px){
-      .main-container{grid-template-columns: 1fr !important;}
-      .config-panel, .preview-panel{height:auto !important;}
-    }
+    .card-click{cursor:pointer}
+    .hidden{display:none!important}
   `; document.head.appendChild(s);
 })();
 
-// Вариант B: надеждно откриване на корена към /img на база <link rel="icon">,
-// с fallback към относителен път спрямо текущата страница
+// ------------------------------
+// Път до /img – извличаме от <link rel="icon">, с fallback
 function resolveImgRoot(){
   try{
     const icon = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
     if(icon && icon.href){
-      const u = new URL('.', icon.href); // директорията на иконата (обикновено ../img/)
+      const u = new URL('.', icon.href);
       return u.href.replace(/\/$/, '');
     }
-  }catch(e){/* ignore */}
+  }catch(e){}
   return new URL('../img/', document.baseURI).href.replace(/\/$/, '');
 }
 const IMG_ROOT = resolveImgRoot();
 
+// ------------------------------
+// Мини „рутер“
+const AppState = {
+  screen: 1,            // 1=Продукти, 2=Платформи, 3=Детайл
+  productId: null,
+  platformId: null
+};
+
+function goTo(screen, params={}){
+  AppState.screen = screen;
+  Object.assign(AppState, params);
+  // Хеш за лесно връщане/рефреш
+  const hash = new URLSearchParams({ s:String(screen), p:AppState.productId||'', f:AppState.platformId||'' });
+  location.hash = hash.toString();
+  render();
+}
+
+window.addEventListener('hashchange', () => {
+  const sp = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const s = Number(sp.get('s')||'1');
+  const p = sp.get('p') || null;
+  const f = sp.get('f') || null;
+  AppState.screen = [1,2,3].includes(s)?s:1;
+  AppState.productId = p || null;
+  AppState.platformId = f || null;
+  render();
+});
+
+// ------------------------------
+// Данни (ти можеш спокойно да сменяш текстове/картинки)
+const DATA = {
+  // Екран 1 – продукти (изображенията са примерни пътища, подмени ги когато имаш готови)
+  products: [
+    { id:'ABALPR', title:'ABALPR', topic:'Продукт', preview:`${IMG_ROOT}/products/ABALPR/cover.png`, des:'Алуминиева платформа – лека и здрава.' },
+    { id:'ABBS',   title:'ABBS',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABBS/cover.png`,   des:'Бордова система – универсална.' },
+    { id:'ABPL',   title:'ABPL',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPL/cover.png`,   des:'Платформа – стандартни и скосени варианти.' },
+    { id:'ABPR',   title:'ABPR',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPR/cover.png`,   des:'Платформа с ролки.' },
+    { id:'ABRAM',  title:'ABRAM',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABRAM/cover.png`,  des:'Рампа / помощни решения.' },
+    { id:'ABSTB',  title:'ABSTB',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABSTB/cover.png`,  des:'Степенки и бордове.' },
+    { id:'ABTRPR', title:'ABTRPR', topic:'Продукт', preview:`${IMG_ROOT}/products/ABTRPR/cover.png`, des:'Транспортни приспособления.' },
+    { id:'BDFPL',  title:'BDFPL',  topic:'Продукт', preview:`${IMG_ROOT}/products/BDFPL/cover.png`,  des:'BDF платформа.' },
+    { id:'BDFTRPR',title:'BDFTRPR',topic:'Продукт', preview:`${IMG_ROOT}/products/BDFTRPR/cover.png`,des:'BDF транспортни решения.' }
+  ],
+
+  // Екран 2 – типове платформи за даден продукт (пример: ABPL → текущите 5 типа)
+  platformsByProduct: {
+    // Специално условие по изискването: при ABPL показваме „сегашния index“ (типове платформи)
+    'ABPL': [
+      { id:'platform-standard',   title:'Платформа', topic:'Стандартна',         preview:`${IMG_ROOT}/platform1.png`, des:'Надеждна, базова платформа.' },
+      { id:'platform-bevel',      title:'Платформа', topic:'Скосена',            preview:`${IMG_ROOT}/platform2.png`, des:'Скосена предна част.' },
+      { id:'platform-bevel-groove',title:'Платформа', topic:'Скосена с вдлъбнатини', preview:`${IMG_ROOT}/platform3.png`, des:'Допълнителни вдлъбнатини.' },
+      { id:'platform-ecco7',      title:'Платформа', topic:'ECCO ALU 7',         preview:`${IMG_ROOT}/platform4.png`, des:'Лек алуминиев вариант.' },
+      { id:'platform-ecco7b',     title:'Платформа', topic:'ECCO ALU 7',         preview:`${IMG_ROOT}/platform5.png`, des:'Алтернативна конфигурация.' }
+    ]
+    // За останалите продукти можеш да добавиш различни списъци; ако липсва – ще ползваме базов fallback
+  }
+};
+
+// Fallback за продукти без конкретни платформи – показваме поне един общ тип
+function getPlatformsForProduct(pid){
+  if (DATA.platformsByProduct[pid]) return DATA.platformsByProduct[pid];
+  return [
+    { id:'platform-generic', title:'Платформа', topic:'Стандартна', preview:`${IMG_ROOT}/platform1.png`, des:'Базова платформа.' }
+  ];
+}
+
+// ------------------------------
+// Рендер функции
+function render(){
+  if (AppState.screen === 1) return renderScreen1();
+  if (AppState.screen === 2) return renderScreen2(AppState.productId);
+  if (AppState.screen === 3) return renderScreen3(AppState.productId, AppState.platformId);
+}
+
+function getListEl(){ return document.querySelector('.carousel .list'); }
+
+function hydrateCarousel(items){
+  const list = getListEl();
+  if (!list) return;
+  list.innerHTML = '';
+
+  items.forEach((it, idx) => {
+    const item = document.createElement('div');
+    item.className = 'item' + (it.hasViewer ? ' has-viewer' : '');
+    item.dataset.id = it.id || '';
+
+    // visual
+    const visual = document.createElement('div');
+    visual.className = 'visual card-click';
+    visual.innerHTML = `<img class="preview" src="${it.preview}" alt="${(it.title||'')}">` + (it.hasViewer? it.viewerHTML||'' : '');
+
+    // introduce
+    const intro = document.createElement('div');
+    intro.className = 'introduce';
+    intro.innerHTML = `
+      <div class="title">${it.title||''}</div>
+      <div class="topic">${it.topic||''}</div>
+      <div class="des">${it.des||''}</div>
+      <button class="seeMore">${it.cta||'Избери'} &#8599</button>
+    `;
+
+    // detail (само ако е детайлен екран)
+    const detail = document.createElement('div');
+    detail.className = 'detail' + (it.detailHTML ? '' : ' hidden');
+    if (it.detailHTML) detail.innerHTML = it.detailHTML;
+
+    item.appendChild(visual);
+    item.appendChild(intro);
+    item.appendChild(detail);
+
+    list.appendChild(item);
+  });
+
+  // след динамичен рендер – маркираме активния (втори елемент)
+  try { markActiveItem && markActiveItem(); } catch(e){}
+}
+
+function renderScreen1(){
+  // Продукти
+  const items = DATA.products.map(p => ({
+    id: p.id,
+    title: 'Продукт',
+    topic: p.title,
+    des: p.des||'',
+    preview: p.preview,
+    cta: 'Избери'
+  }));
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
+}
+
+function renderScreen2(pid){
+  const platforms = getPlatformsForProduct(pid);
+  const items = platforms.map(pl => ({
+    id: pl.id,
+    title: pl.title,
+    topic: pl.topic,
+    des: pl.des||'',
+    preview: pl.preview,
+    cta: 'Избери'
+  }));
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
+}
+
+function renderScreen3(pid, fid){
+  // Екран 3 – строим една детайлна карта (has-viewer) + табовете/тъмбнейлите
+  const baseDetail = `
+    <div class="title">Стандартна</div>
+    <div class="des">
+      Платформите намират приложение в – строителство, логистика, пътно поддържане и др.
+    </div>
+    <div class="main-container">
+      <div class="config-panel">
+        <div class="tab-labels">
+          <button class="active" onclick="showTab(0)">Основни параметри</button>
+          <button onclick="showTab(1)">Дъно</button>
+          <button onclick="showTab(2)">Челна стена</button>
+          <button onclick="showTab(3)">Вид укрепване</button>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column;">
+          <div id="tab-content" class="tab-content"></div>
+        </div>
+      </div>
+      <div class="thumb-wrap">
+        <div class="thumbnail-row" id="thumbRow"></div>
+      </div>
+    </div>
+    <div class="checkout">
+      <button class="action" onclick="showOrderModal()">Поръчай</button>
+    </div>
+  `;
+
+  const viewerHTML = `
+    <model-viewer id="interactiveModel" class="viewer"
+      src="${IMG_ROOT}/7000_RAL7016_Anthracite_gray/model.glb"
+      camera-controls auto-rotate reveal="manual" style="background: transparent;"
+      exposure="1" shadow-intensity="1" camera-orbit="200deg 75deg 13m">
+    </model-viewer>`;
+
+  const items = [
+    { id: fid||'platform-selected', title:'Платформа', topic:'Стандартна', des:'', preview:`${IMG_ROOT}/platform1.png`, hasViewer:true, viewerHTML:viewerHTML, detailHTML:baseDetail, cta:'Виж още' }
+  ];
+
+  hydrateCarousel(items);
+
+  // имитираме текущия „showDetail“ режим
+  const car = document.querySelector('.carousel');
+  if (car) car.classList.add('showDetail');
+
+  // Инициализираме табовете и снимките
+  try { prepareDOM(); window.showTab(0); generateConfig(true); } catch(e){}
+}
+
+// ------------------------------
+// Делегация на кликове върху .seeMore и върху визуализацията (картата)
+(function setupDelegatedClicks(){
+  const list = document.querySelector('.carousel .list');
+  if (!list) return;
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seeMore');
+    const card = e.target.closest('.item');
+    if (!btn && !e.target.closest('.visual')) return; // кликове само по бутона/визуала
+    if (!card) return;
+
+    const id = card.dataset.id;
+
+    if (AppState.screen === 1) {
+      // Избор на продукт
+      goTo(2, { productId: id });
+    }
+    else if (AppState.screen === 2) {
+      // Избор на платформа
+      goTo(3, { platformId: id });
+    }
+    else if (AppState.screen === 3) {
+      // В детайла – можем да отворим модала или да игнорираме
+    }
+  });
+})();
+
+// ------------------------------
+// СЪЩЕСТВУВАЩА ЛОГИКА ЗА ДЕТАЙЛ (НЕ СЕ ПИПА, само е интегрирана по-надолу)
 // --- TAB DATA (глобално, достъпно от showTab) ---
 window.TAB_DATA = [
   `
@@ -90,14 +314,20 @@ window.showTab = function(i){
   if (i === 0) initAutoReload();
 };
 
-document.addEventListener('DOMContentLoaded',()=>{
-  prepareDOM();
-  initTabs();
-  // първоначален таб 0
-  window.showTab(0);
-  generateConfig(true);
-});
+// DOM готовност → стартираме от екран 1 (продукти) или от хеш
+(document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot());
+function boot(){
+  const sp = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const s = Number(sp.get('s')||'1');
+  const p = sp.get('p') || null;
+  const f = sp.get('f') || null;
+  AppState.screen = [1,2,3].includes(s)?s:1;
+  AppState.productId = p || null;
+  AppState.platformId = f || null;
+  render();
+}
 
+// === Вспомагателни функции за детайла (повторно използвани) ===
 function getActiveItem(){
   return document.querySelector('.carousel .list .item.has-viewer') ||
          document.querySelector('.carousel .list .item:nth-child(2)');
@@ -130,20 +360,18 @@ function ensureThumbRow(){
 }
 
 function prepareDOM(){
-  // overlay върху viewer контейнера
   const wrap = getViewerContainer();
   if(wrap && !document.getElementById('viewerOverlay')){
     const overlay=document.createElement('div');
     overlay.className='viewer-overlay'; overlay.id='viewerOverlay'; overlay.style.display='none';
     overlay.innerHTML=`<div class="spinner"></div><div class="stage" id="viewerStage">Подготовка…</div>`;
-    wrap.style.position = wrap.style.position || 'relative';
+    if (!wrap.style.position) wrap.style.position = 'relative';
     wrap.appendChild(overlay);
   }
   ensureThumbRow();
 }
 
 function initTabs(){
-  // освен inline onclick, подсигуряваме и addEventListener
   const tabButtons=document.querySelectorAll('.tab-labels button');
   tabButtons.forEach((btn,i)=>btn.addEventListener('click',()=>window.showTab(i)));
 }
@@ -173,7 +401,7 @@ function generateConfig(initial){
   const length=document.getElementById('length')?.value||'7000';
   const color=document.getElementById('color')?.value||'RAL3000_Flame_red';
   const configID=`${length}_${color}`;
-  const basePath=`${IMG_ROOT}/${configID}`; // коректен корен към /img
+  const basePath=`${IMG_ROOT}/${configID}`;
 
   const mv=getViewer();
   const thumbRow=ensureThumbRow();
@@ -187,7 +415,6 @@ function generateConfig(initial){
     .then(()=>stageOverlay('Изчисляване на чертежа…',1200))
     .then(()=>stageOverlay('Зареждане…',1200))
     .then(()=>{
-    
       mv.setAttribute('src',`${basePath}/model.glb`);
       thumbRow.innerHTML=`
         <img src="${basePath}/view1.png" class="lightbox-trigger" data-type="image" data-src="${basePath}/view1.png">
@@ -201,9 +428,7 @@ function generateConfig(initial){
       toggleOverlay(false);
       mv.classList.remove('fade-out');
       mv.classList.add('fade-in');
-      // ако е с reveal="manual" — махни постера
       mv.dismissPoster && mv.dismissPoster();
-      // отреагирай и при load на модела
       mv.addEventListener('load',()=>{ try{mv.dismissPoster&&mv.dismissPoster();}catch(e){} }, {once:true});
     });
 }
@@ -211,23 +436,14 @@ function generateConfig(initial){
 function enableLightbox(){
   const triggers=document.querySelectorAll('.lightbox-trigger');
   triggers.forEach(el=>{
-    if(el.dataset.lbInit) return; // предотвратяваме двойно закачане
+    if(el.dataset.lbInit) return;
     el.dataset.lbInit = '1';
     el.addEventListener('click',()=>{
       const src=el.dataset.src;
       const type=el.dataset.type;
       const modal=document.createElement('div');
       modal.className='lightbox-modal';
-      modal.style.position='fixed';
-      modal.style.top='0';
-      modal.style.left='0';
-      modal.style.width='100vw';
-      modal.style.height='100vh';
-      modal.style.background='rgba(0,0,0,0.85)';
-      modal.style.display='flex';
-      modal.style.alignItems='center';
-      modal.style.justifyContent='center';
-      modal.style.zIndex='9999';
+      Object.assign(modal.style,{position:'fixed',top:'0',left:'0',width:'100vw',height:'100vh',background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:'9999'});
       modal.innerHTML=`<div style="max-width:90%;max-height:90%;">${type==='pdf'?`<iframe src="${src}" style="width:100%;height:100%;border:none;"></iframe>`:`<img src="${src}" style="max-width:100%;max-height:100%">`}</div>`;
       modal.addEventListener('click',()=>modal.remove());
       document.body.appendChild(modal);
