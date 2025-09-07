@@ -15,7 +15,7 @@ if (!carousel) {
 function markActiveItem() {
   const items = document.querySelectorAll('.carousel .list .item');
   items.forEach(el => el.classList.remove('is-active'));
-  const active = document.querySelector('.carousel .list .item:nth-child(2)');
+  const active = document.querySelector('.carousel .list .item:nth-child(1)');
   if (active) active.classList.add('is-active');
 }
 markActiveItem();
@@ -63,7 +63,7 @@ seeMoreButtons.forEach((button) => {
     markActiveItem();
 
     // активен елемент (втори)
-    let activeItem = document.querySelector('.carousel .list .item:nth-child(2)');
+    let activeItem = document.querySelector('.carousel .list .item:nth-child(1)');
     if(activeItem){
       let viewer = activeItem.querySelector('model-viewer');
       if(viewer){
@@ -134,3 +134,4 @@ document.addEventListener('keydown', (e) => {
     }
   }, {passive:true});
 })();
+
