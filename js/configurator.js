@@ -76,34 +76,34 @@ window.addEventListener('hashchange', () => {
 // ------------------------------
 // Данни (ти можеш спокойно да сменяш текстове/картинки)
 const DATA = {
-  // Екран 0 – главно меню
+  // Екран 0 – главно меню (ПРОДУКТИ ПЪРВО)
   mainMenu: [
-    { id:'contacts', title:'REALMET', topic:'Контакти', des:'Свържете се с нас', preview:`${IMG_ROOT}/menu/contacts/cover.png`, cta:'Виж повече' },
     { id:'products', title:'REALMET', topic:'Продукти', des:'Гама решения за мултилифт системи', preview:`${IMG_ROOT}/menu/products/cover.png`, cta:'Виж повече' },
     { id:'blast',    title:'REALMET', topic:'Бластиране', des:'Подготовка на повърхности, бластиране и покрития', preview:`${IMG_ROOT}/menu/blast/cover.png`, cta:'Виж повече' },
-    { id:'about',    title:'REALMET', topic:'За нас', des:'Кратко представяне на компанията', preview:`${IMG_ROOT}/menu/about/cover.png`, cta:'Виж повече' }
+    { id:'about',    title:'REALMET', topic:'За нас', des:'Кратко представяне на компанията', preview:`${IMG_ROOT}/menu/about/cover.png`, cta:'Виж повече' },
+    { id:'contacts', title:'REALMET', topic:'Контакти', des:'Свържете се с нас', preview:`${IMG_ROOT}/menu/contacts/cover.png`, cta:'Виж повече' }
   ],
 
-  // Екран 1 – продукти (изображенията са примерни пътища, подмени ги когато имаш готови)
+  // Екран 1 – продукти (ABALPR ПЪРВО)
   products: [
-    { id:'BDFPL',  title:'BDF Платформа',  topic:'Продукт', preview:`${IMG_ROOT}/products/BDFPL/cover.png`,  des:'BDF платформа.' },
     { id:'ABALPR', title:'Алуминиева притча', topic:'Продукт', preview:`${IMG_ROOT}/products/ABALPR/cover.png`, des:'Притча със алуминиеви странични капаци за система мултилифт са изработени съгласно DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
     { id:'ABBS',   title:'Мултилифт контейнер',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABBS/cover.png`,   des:'Мощно и гъвкаво решение. Нашите контейнери за строителни отпадъци предоставят изключително решение за събиране и транспорт на отпадъци от различни строителни и ремонтни дейности.' },
     { id:'ABPL',   title:'Платформа',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPL/cover.png`,   des:'Гъвкаво решение за вашите транспортни нужди. Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.' },
     { id:'ABPR',   title:'Притча',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPR/cover.png`,   des:'Притча със стоманени странични капаци за система мултилифт са изработени съгласно DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
     { id:'ABRAM',  title:'Рама',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABRAM/cover.png`,  des:'Рамите за система мултилифт  се произвеждат по DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
     { id:'ABSTB',  title:'Стиковани',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABSTB/cover.png`,  des:'Мултилифт контейнерите за стековане са изработени по DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
-    { id:'ABTRPR', title:'Тристранна притча', topic:'Продукт', preview:`${IMG_ROOT}/products/ABTRPR/cover.png`, des:'Притча с тристранно отваряема щора са сертифицирани по DIN 30722 тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' }
+    { id:'ABTRPR', title:'Тристранна притча', topic:'Продукт', preview:`${IMG_ROOT}/products/ABTRPR/cover.png`, des:'Притча с тристранно отваряема щора са сертифицирани по DIN 30722 тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
+    { id:'BDFPL',  title:'BDF Платформа',  topic:'Продукт', preview:`${IMG_ROOT}/products/BDFPL/cover.png`,  des:'BDF платформа.' }
   ],
 
   // Екран 2 – типове платформи за даден продукт (пример: ABPL → текущите 5 типа)
   platformsByProduct: {
     'ABPL': [
-      { id:'platform-ecco7b',      title:'Платформа', topic:'ECCO ALU 7',             preview:`${IMG_ROOT}/platform5.png`, des:'Алтернативна конфигурация.' },
       { id:'platform-standard',    title:'Платформа', topic:'Стандартна',             preview:`${IMG_ROOT}/platform1.png`, des:'Надеждна, базова платформа.' },
       { id:'platform-bevel',       title:'Платформа', topic:'Скосена',                preview:`${IMG_ROOT}/platform2.png`, des:'Скосена предна част.' },
       { id:'platform-bevel-groove',title:'Платформа', topic:'Скосена с вдлъбнатини',  preview:`${IMG_ROOT}/platform3.png`, des:'Допълнителни вдлъбнатини.' },
-      { id:'platform-ecco7',       title:'Платформа', topic:'ECCO ALU 7',             preview:`${IMG_ROOT}/platform4.png`, des:'Лек алуминиев вариант.' }
+      { id:'platform-ecco7',       title:'Платформа', topic:'ECCO ALU 7',             preview:`${IMG_ROOT}/platform4.png`, des:'Лек алуминиев вариант.' },
+      { id:'platform-ecco7b',      title:'Платформа', topic:'ECCO ALU 7',             preview:`${IMG_ROOT}/platform5.png`, des:'Алтернативна конфигурация.' }
     ]
   },
 
@@ -171,6 +171,26 @@ function hydrateCarousel(items){
 
     list.appendChild(item);
   });
+
+  // --- Центриране според CSS-а, който очаква :nth-child(2) за активен ---
+  const count = list.children.length;
+  if (count === 1) {
+    // при един елемент добавяме прозрачен спейсър най-отпред,
+    // за да стане реалната карта втори елемент (видим в центъра)
+    const spacer = document.createElement('div');
+    spacer.className = 'item';
+    spacer.style.opacity = '0';
+    spacer.style.pointerEvents = 'none';
+    list.prepend(spacer);
+  } else if (count >= 2) {
+    // при 2+ елемента преместваме последния най-отпред,
+    // така оригиналният първи става втори (централен)
+    list.prepend(list.lastElementChild);
+  }
+
+  // ако имаме has-viewer елемент – подсигуряваме, че е „активен“
+  const viewerItem = list.querySelector('.item.has-viewer');
+  if (viewerItem) viewerItem.classList.add('is-active');
 
   // след динамичен рендер – маркираме активния (втори елемент)
   try { markActiveItem && markActiveItem(); } catch(e){}
