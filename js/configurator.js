@@ -72,15 +72,14 @@ window.addEventListener('hashchange', () => {
 const DATA = {
   // Екран 1 – продукти (изображенията са примерни пътища, подмени ги когато имаш готови)
   products: [
-    { id:'ABALPR', title:'ABALPR', topic:'Продукт', preview:`${IMG_ROOT}/products/ABALPR/cover.png`, des:'Алуминиева платформа – лека и здрава.' },
-    { id:'ABBS',   title:'ABBS',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABBS/cover.png`,   des:'Бордова система – универсална.' },
-    { id:'ABPL',   title:'ABPL',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPL/cover.png`,   des:'Платформа – стандартни и скосени варианти.' },
-    { id:'ABPR',   title:'ABPR',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPR/cover.png`,   des:'Платформа с ролки.' },
-    { id:'ABRAM',  title:'ABRAM',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABRAM/cover.png`,  des:'Рампа / помощни решения.' },
-    { id:'ABSTB',  title:'ABSTB',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABSTB/cover.png`,  des:'Степенки и бордове.' },
-    { id:'ABTRPR', title:'ABTRPR', topic:'Продукт', preview:`${IMG_ROOT}/products/ABTRPR/cover.png`, des:'Транспортни приспособления.' },
-    { id:'BDFPL',  title:'BDFPL',  topic:'Продукт', preview:`${IMG_ROOT}/products/BDFPL/cover.png`,  des:'BDF платформа.' },
-    { id:'BDFTRPR',title:'BDFTRPR',topic:'Продукт', preview:`${IMG_ROOT}/products/BDFTRPR/cover.png`,des:'BDF транспортни решения.' }
+    { id:'ABALPR', title:'Алуминиева притча', topic:'Продукт', preview:`${IMG_ROOT}/products/ABALPR/cover.png`, des:'Притча със алуминиеви странични капаци за система мултилифт са изработени съгласно DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
+    { id:'ABBS',   title:'Мултилифт контейнер',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABBS/cover.png`,   des:'Мощно и гъвкаво решение. Нашите контейнери за строителни отпадъци предоставят изключително решение за събиране и транспорт на отпадъци от различни строителни и ремонтни дейности.' },
+    { id:'ABPL',   title:'Платформа',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPL/cover.png`,   des:'Гъвкаво решение за вашите транспортни нужди. Нашите мултилифт платформи са проектирани да удовлетворят разнообразни нужди в множество индустрии, предоставяйки надеждност и ефективност при всяко приложение.' },
+    { id:'ABPR',   title:'Притча',   topic:'Продукт', preview:`${IMG_ROOT}/products/ABPR/cover.png`,   des:'Притча със стоманени странични капаци за система мултилифт са изработени съгласно DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
+    { id:'ABRAM',  title:'Рама',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABRAM/cover.png`,  des:'Рамите за система мултилифт  се произвеждат по DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
+    { id:'ABSTB',  title:'Стиковани',  topic:'Продукт', preview:`${IMG_ROOT}/products/ABSTB/cover.png`,  des:'Мултилифт контейнерите за стековане са изработени по DIN 30722, тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
+    { id:'ABTRPR', title:'Тристранна притча', topic:'Продукт', preview:`${IMG_ROOT}/products/ABTRPR/cover.png`, des:'Притча с тристранно отваряема щора са сертифицирани по DIN 30722 тествани съгласно DGUV - правило 114-010 (BGR 186) и притежават UVV стикер с инструкции за безопасност.' },
+    { id:'BDFPL',  title:'BDF Платформа',  topic:'Продукт', preview:`${IMG_ROOT}/products/BDFPL/cover.png`,  des:'BDF платформа.' },
   ],
 
   // Екран 2 – типове платформи за даден продукт (пример: ABPL → текущите 5 типа)
