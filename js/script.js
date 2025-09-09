@@ -126,6 +126,7 @@ document.addEventListener('keydown', (e) => {
 })();
 
 
+
 // === Swipe на мобилно за карусела ===
 (function(){
   if (!carousel) return;
@@ -151,5 +152,6 @@ document.addEventListener('keydown', (e) => {
     }
   }, {passive:true});
 })();
+
 
 
