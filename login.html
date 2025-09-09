@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход | REALMET</title>
+  <link rel="icon" href="img/logo.png" />
+  <!-- Използваме същите стилове като основната страница -->
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Локален стил само за login картата (без да пипаме глобалния CSS) */
+    .login-card .introduce { max-width: 520px; }
+    .login-form { margin-top: 12px; display: grid; gap: 10px; }
+    .login-form label { font-size: 14px; color: #d9d9d9; opacity: .85; }
+    .login-input { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #3a3a3a; background: #151515; color: #eaeaea; }
+    .login-input:focus { outline: none; border-color: #6b46ff; box-shadow: 0 0 0 2px rgba(107,70,255,.25); }
+    .user-suggestions { position: relative; }
+    .user-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #101010; border: 1px solid #2a2a2a; border-radius: 10px; padding: 6px; display: none; z-index: 20; }
+    .user-list button { width: 100%; text-align: left; padding: 10px 12px; background: transparent; color: #ddd; border: none; border-radius: 8px; cursor: pointer; }
+    .user-list button:hover { background: #1e1e1e; }
+    .login-actions { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+    .btn-primary { padding: 10px 14px; border: 1px solid #6b46ff; border-radius: 12px; background: linear-gradient(180deg, #6b46ff, #4a2dcc); color: #fff; cursor: pointer; }
+    .btn-primary:hover { filter: brightness(1.05); }
+    .links { display: flex; gap: 16px; font-size: 14px; opacity: .85; }
+    .links a { color: #d6d6ff; text-decoration: underline; cursor: pointer; }
+    .error { color: #ff8a8a; font-size: 14px; min-height: 20px; }
+    .visual .preview { object-fit: contain; }
+    .arrows .prev, .arrows .next { pointer-events: none; opacity: .3; }
+  </style>
+</head>
+<body>
+  <!-- Хедърът е същият, но активен е Вход -->
+  <header class="menu">
+    <div class="logo">
+      <img src="img/logo.png" alt="" />
+      <span>REALMET</span>
+    </div>
+    <ul>
+      <li><a class="active">Вход</a></li>
+    </ul>
+    <div class="account">
+      <i class="user"></i>
+    </div>
+  </header>
+
+  <div class="carousel">
+    <div class="list">
+      <div class="item login-card">
+        <div class="visual">
+          <img class="preview" src="img/menu/products/cover.png" alt="Login" />
+        </div>
+        <div class="introduce">
+          <div class="title">REALMET</div>
+          <div class="topic">Вход в системата</div>
+          <div class="des">Демо екран за логване. Може да избереш от готовите акаунти или да въведеш ръчно. Паролата е <strong>име+123</strong> (напр. <em>sales123</em>).</div>
+
+          <form id="loginForm" class="login-form">
+            <div class="user-suggestions">
+              <label for="username">Потребител</label>
+              <input id="username" class="login-input" type="text" autocomplete="username" placeholder="напр. sales / ceo / eng / client" />
+              <div id="userList" class="user-list">
+                <button type="button" data-user="sales">sales</button>
+                <button type="button" data-user="ceo">ceo</button>
+                <button type="button" data-user="eng">eng</button>
+                <button type="button" data-user="client">client</button>
+              </div>
+            </div>
+
+            <div>
+              <label for="password">Парола</label>
+              <input id="password" class="login-input" type="password" autocomplete="current-password" placeholder="••••••" />
+            </div>
+
+            <div class="login-actions">
+              <button class="btn-primary" type="submit">Вход</button>
+              <div class="links">
+                <a id="forgotLink">Забравена парола</a>
+                <a id="signupLink">Създай акаунт</a>
+              </div>
+            </div>
+            <div id="loginError" class="error"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrows"><button class="prev">‹</button><button class="next">›</button></div>
+    <div class="time">Виж всички ↗</div>
+  </div>
+
+  <script>
+    // показване/скриване на списъка с потребители при фокус в username
+    const usernameInput = document.getElementById('username');
+    const userList = document.getElementById('userList');
+    usernameInput.addEventListener('focus', () => userList.style.display = 'block');
+    usernameInput.addEventListener('blur', () => setTimeout(()=> userList.style.display = 'none', 120));
+    userList.addEventListener('mousedown', (e)=>{ // mousedown, за да сетнем преди blur
+      const btn = e.target.closest('button[data-user]');
+      if (!btn) return;
+      usernameInput.value = btn.dataset.user;
+    });
+
+    // валидиране и логване
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+
+    const ROLE_MAP = {
+      sales: 'sales',
+      ceo: 'ceo',
+      eng: 'engineer',
+      engineer: 'engineer',
+      client: 'client'
+    };
+
+    function resolveRole(user){
+      const k = (user||'').trim().toLowerCase();
+      return ROLE_MAP[k] || 'client';
+    }
+
+    function doLogin(user, pass){
+      const u = (user||'').trim();
+      const p = pass||'';
+      if (!u || !p){
+        loginError.textContent = 'Моля, въведете потребителско име и парола.';
+        return;
+      }
+      // демо правило: паролата е име+123 (без значение малки/големи букви)
+      if (p.toLowerCase() !== (u.toLowerCase() + '123')){
+        loginError.textContent = 'Грешна парола. Подсказка: име+123 (напр. sales123)';
+        return;
+      }
+
+      const role = resolveRole(u);
+      try {
+        localStorage.setItem('dp.role', role);
+        localStorage.setItem('dp.user', u);
+      } catch(e) {}
+      location.href = 'index.html';
+    }
+
+    loginForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      loginError.textContent = '';
+      doLogin(usernameInput.value, document.getElementById('password').value);
+    });
+
+    // линкове (демо)
+    document.getElementById('forgotLink').addEventListener('click', ()=>{
+      alert('Демо: свържете се с администратор. В продукция – форма за възстановяване на парола.');
+    });
+    document.getElementById('signupLink').addEventListener('click', ()=>{
+      alert('Демо: създаването на акаунт е изключено. В продукция – регистрационна форма.');
+    });
+
+    // ако вече има роля – директно към сайта
+    (function boot(){
+      try {
+        if (localStorage.getItem('dp.role')) location.replace('index.html');
+      } catch(e) {}
+    })();
+  </script>
+</body>
+</html>
