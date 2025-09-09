@@ -109,6 +109,23 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowLeft') showSlider('prev');
 });
 
+(function applyRoleVisibility(){
+  let role = 'client';
+  try { role = localStorage.getItem('dp.role') || 'client'; } catch(e){}
+
+  // Ако няма роля → към login.html
+  if (!role) { location.replace('login.html'); return; }
+
+  document.querySelectorAll('[data-role-visible]').forEach(el=>{
+    const roles = el.getAttribute('data-role-visible').split(',').map(s=>s.trim());
+    el.style.display = roles.includes(role) ? '' : 'none';
+  });
+
+  // по желание: добавяме клас по ролята за глобални стилове
+  document.body.classList.add('role-' + role);
+})();
+
+
 // === Swipe на мобилно за карусела ===
 (function(){
   if (!carousel) return;
@@ -134,4 +151,5 @@ document.addEventListener('keydown', (e) => {
     }
   }, {passive:true});
 })();
+
 
