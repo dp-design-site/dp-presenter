@@ -159,5 +159,14 @@
       } catch(e) {}
     })();
   </script>
+
+  <script>
+      const logout = () => {
+        try { localStorage.removeItem('dp.role'); } catch(e){}
+        location.href = 'login.html';
+      };
+      document.getElementById('logoutLink')?.addEventListener('click', logout);
+    </script>
+
 </body>
 </html>
