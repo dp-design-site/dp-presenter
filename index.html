@@ -55,6 +55,16 @@
         <div class="dropdown">
           <a href="#">Настройки</a>
           <a href="login.html">Изход</a>
+            <!-- пример: -->
+
+                <script>
+                  const logout = () => {
+                    try { localStorage.removeItem('dp.role'); } catch(e){}
+                    location.href = 'login.html';
+                  };
+                  document.getElementById('logoutLink')?.addEventListener('click', logout);
+                </script>
+
           <button onclick="toggleTheme()" style="display: block; padding: 10px; color: #eee; text-decoration: none;" >Смени тема</button>
         </div>
       </div>
@@ -340,6 +350,7 @@
 </body>
 
 </html>
+
 
 
 
