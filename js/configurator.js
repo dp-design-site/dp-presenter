@@ -12,9 +12,17 @@
   const id='runtime-styles';
   if(document.getElementById(id)) return;
   const s=document.createElement('style'); s.id=id;
-  s.textContent=`$1
-    /* Блокиране на карусел навигацията при ниво 3 (детайл) */
-    body.no-carousel-input .arrows button{pointer-events:none;opacity:.35}
+  s.textContent=`
+    .spinner{border:4px solid #444;border-top:4px solid #cc0000;border-radius:50%;width:44px;height:44px;animation:spin 1s linear infinite;margin:12px auto}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+    .fade-out{opacity:.35;filter:grayscale(.15);transition:opacity .35s ease,filter .35s ease}
+    .fade-in{opacity:1;filter:none;transition:opacity .35s ease,filter .35s ease}
+    .viewer-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.35);backdrop-filter:blur(1px);z-index:5}
+    .viewer-overlay .stage{color:#ccc;margin-top:8px;font-size:14px}
+    .thumbnail-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .thumbnail-row img{display:block;width:120px;height:80px;object-fit:cover;cursor:pointer;border:1px solid #333;border-radius:6px}
+    .card-click{cursor:pointer}
+    .hidden{display:none!important}
   `; document.head.appendChild(s);
 })();
 
@@ -188,16 +196,45 @@ function hydrateCarousel(items){
   try { markActiveItem && markActiveItem(); } catch(e){}
 }
 
-function renderScreen0(){$1document.body.classList.remove('showDetail');
-  document.body.classList.remove('no-carousel-input');
+function renderScreen0(){
+  const items = DATA.mainMenu.map(m => ({
+    id: m.id,
+    title: m.title,
+    topic: m.topic,
+    des: m.des||'',
+    preview: m.preview,
+    cta: m.cta||'Виж повече'
+  }));
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
 }
 
-function renderScreen1(){$1document.body.classList.remove('showDetail');
-  document.body.classList.remove('no-carousel-input');
+function renderScreen1(){
+  // Продукти
+  const items = DATA.products.map(p => ({
+    id: p.id,
+    title: 'Продукт',
+    topic: p.title,
+    des: p.des||'',
+    preview: p.preview,
+    cta: 'Избери'
+  }));
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
 }
 
-function renderScreen2(pid){$1document.body.classList.remove('showDetail');
-  document.body.classList.remove('no-carousel-input');
+function renderScreen2(pid){
+  const platforms = getPlatformsForProduct(pid);
+  const items = platforms.map(pl => ({
+    id: pl.id,
+    title: pl.title,
+    topic: pl.topic,
+    des: pl.des||'',
+    preview: pl.preview,
+    cta: 'Избери'
+  }));
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
 }
 
 function renderScreen3(pid, fid){
@@ -243,13 +280,21 @@ function renderScreen3(pid, fid){
 
   const car = document.querySelector('.carousel');
   if (car) car.classList.add('showDetail');
-  document.body.classList.add('no-carousel-input');
 
   try { prepareDOM(); window.showTab(0); generateConfig(true); } catch(e){}
 }
 
-function renderScreen4(pageId){$1document.body.classList.remove('showDetail');
-  document.body.classList.remove('no-carousel-input');
+function renderScreen4(pageId){
+  const page = DATA.pages[pageId];
+  if(!page){
+    // fallback към главно меню
+    return goTo(0);
+  }
+  const items = [
+    { id: pageId, title:'REALMET', topic: page.title, des: page.text||'', preview: page.img, cta:'Свържи се', detailHTML:'' }
+  ];
+  hydrateCarousel(items);
+  document.body.classList.remove('showDetail');
 }
 
 // ------------------------------
@@ -481,26 +526,3 @@ function enableLightbox(){
 function showOrderModal(){ const m=document.getElementById('orderModal'); if(m) m.style.display='block'; }
 function closeModal(){ const m=document.getElementById('orderModal'); if(m) m.style.display='none'; }
 window.onclick=function(e){ const m=document.getElementById('orderModal'); if(e.target===m) closeModal(); }
-
-// --- Глобални блокери за стрелки и жестове при ниво 3 ---
-(function installCarouselInputBlockers(){
-  // Блокиране на клавиатурните стрелки
-  document.addEventListener('keydown', (e)=>{
-    if (!document.body.classList.contains('no-carousel-input')) return;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  }, true); // capture, преди оригиналните слушатели
-
-  // Блокиране на swipe/gesture върху карусела (мобилно)
-  const stopIfNeeded = (e)=>{
-    if (!document.body.classList.contains('no-carousel-input')) return;
-    if (e.target.closest && e.target.closest('.carousel')) {
-      e.stopPropagation();
-      // не предотвратяваме скрол на страницата; само карусела
-    }
-  };
-  document.addEventListener('touchstart', stopIfNeeded, true);
-  document.addEventListener('touchend',   stopIfNeeded, true);
-})();
