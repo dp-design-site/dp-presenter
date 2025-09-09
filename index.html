@@ -54,16 +54,23 @@
         <span class="user-icon">👤</span>
         <div class="dropdown">
           <a href="#">Настройки</a>
-          <a href="login.html">Изход</a>
-            <!-- пример: -->
-
-                <script>
-                  const logout = () => {
-                    try { localStorage.removeItem('dp.role'); } catch(e){}
-                    location.href = 'login.html';
-                  };
-                  document.getElementById('logoutLink')?.addEventListener('click', logout);
-                </script>
+          <!-- Изход: чистим ролята и пренасочваме към login.html -->
+          <a href="#" id="logoutLink">Изход</a>
+          <script>
+            (function(){
+              const logout = (e) => {
+                if (e) e.preventDefault();
+                try {
+                  localStorage.removeItem('dp.role');
+                  localStorage.removeItem('dp.user');
+                } catch(err) {}
+                location.href = 'login.html';
+              };
+              document.getElementById('logoutLink')?.addEventListener('click', logout);
+              // Допълнително: позволяваш ?logout=1 в URL да прави изход
+              if (new URLSearchParams(location.search).get('logout') === '1') logout();
+            })();
+          </script>
 
           <button onclick="toggleTheme()" style="display: block; padding: 10px; color: #eee; text-decoration: none;" >Смени тема</button>
         </div>
@@ -350,44 +357,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
