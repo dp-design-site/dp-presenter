@@ -349,7 +349,7 @@ window.TAB_DATA = [
           <option value="RAL1026_Luminous_yellow">RAL1026 Жълт</option>
           <option value="RAL3000_Flame_red">RAL3000 Червен</option>
           <option value="RAL5012_Light_blue">RAL5012 Син</option>
-          <option value="RAL7016_Anthracite_gray" selected>RAL5012 Сив</option>
+          <option value="RAL7016_Anthracite_gray" selected>RAL7016 Сив</option>
         </select>
       </div>
     </div>
