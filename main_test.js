@@ -482,11 +482,6 @@ function setVisibilityByExactObjectNames(root, objectNames, visible) {
   return hits;
 }
 
-function showAllObjects(root) {
-  root.traverse((obj) => {
-    obj.visible = true;
-  });
-}
 
 document.getElementById('btnOriginal').addEventListener('click', () => {
   applyOriginalMaterials();
