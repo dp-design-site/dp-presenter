@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DP GLB Multi Viewer Test</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #1e1e1e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    #info {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 420px;
+    }
+
+    #status {
+      margin-top: 6px;
+      opacity: 0.9;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+
+  <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div id="info">
+      <div><strong>DP Design Pilot / GLB PoC</strong></div>
+      <div>Orbit: ляв бутон</div>
+      <div>Pan: десен бутон</div>
+      <div>Zoom: колелце</div>
+      <div id="status">Зареждане...</div>
+    </div>
+  </div>
+
+  <script type="module" src="./main_test.js"></script>
+</body>
+</html>
