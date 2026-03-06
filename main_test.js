@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 
 const DEBUG_SHOW_MODEL_ORIGINS = false;
-const MODEL_WORLD_SCALE = 1000;
+const MODEL_WORLD_SCALE = 1;
 
 const MODEL_CONFIG = [
   {
