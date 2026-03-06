@@ -8,21 +8,9 @@ const DEBUG_SHOW_MODEL_ORIGINS = false;
 const MODEL_WORLD_SCALE = 1;
 
 const MODEL_CONFIG = [
-  {
-    key: 'bottom',
-    file: 'AB_Bottom_Steel.glb',
-    offset: [0, 0, 0]
-  },
-  {
-    key: 'front',
-    file: 'AB_Front.glb',
-    offset: [0, 0, 0]
-  },
-  {
-    key: 'rear_system',
-    file: 'H-образен захват_DIN2.glb',
-    offset: [0, 0, 0]
-  }
+  { key: 'bottom', file: 'AB_Bottom_Steel.glb', offset: [0, 0, 0] },
+  { key: 'front', file: 'AB_Front.glb', offset: [0, 0, 0] },
+  { key: 'rear_system', file: 'H-образен захват_DIN2.glb', offset: [0, 0, 0] }
 ];
 
 const COLOR_PRESETS = {
@@ -33,29 +21,14 @@ const COLOR_PRESETS = {
 };
 
 const PAINT_SKIP_TOKENS = [
-  'bolt',
-  'bolts',
-  'nut',
-  'nuts',
-  'washer',
-  'washers',
-  'screw',
-  'screws',
-  'fastener',
-  'fasteners',
-  'гайка',
-  'гайки',
-  'болт',
-  'болтове',
-  'шайба',
-  'шайби',
-  'винт',
-  'винтове',
-  'din',
-  'iso'
+  'bolt', 'bolts', 'nut', 'nuts', 'washer', 'washers', 'screw', 'screws',
+  'fastener', 'fasteners',
+  'гайка', 'гайки', 'болт', 'болтове', 'шайба', 'шайби', 'винт', 'винтове',
+  'din', 'iso'
 ];
 
-const STEEL_ROLLER_OBJECT_NAMES = [
+// exact names from your debug dump
+const STEEL_ROLLER_EXACT_NAMES = [
   'Ролка_стоманена_-159x2901',
   'Ролка_стоманена_-159x2902'
 ];
@@ -121,6 +94,15 @@ const loader = new GLTFLoader();
 
 const loadedModels = [];
 let activeOverrideMaterial = null;
+
+function normalizeName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKC')
+    .replace(/\s+/g, '')
+    .replace(/:/g, '')
+    .trim();
+}
 
 function setStatus(lines) {
   statusEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
@@ -205,7 +187,6 @@ function applyOriginalMaterials() {
   for (const model of loadedModels) {
     model.root.traverse((obj) => {
       if (!obj.isMesh) return;
-
       if (obj.userData.dpOriginalMaterial) {
         obj.material = obj.userData.dpOriginalMaterial;
       }
@@ -280,6 +261,53 @@ function fitCameraToObjects(objects, offset = 1.25) {
   controls.update();
 }
 
+function showAllObjects(root) {
+  root.traverse((obj) => {
+    obj.visible = true;
+  });
+}
+
+function getModelByKey(key) {
+  return loadedModels.find(x => x.key === key);
+}
+
+function buildNameIndex(root) {
+  const index = new Map();
+
+  root.traverse((obj) => {
+    if (!obj.name) return;
+
+    const key = normalizeName(obj.name);
+
+    if (!index.has(key)) {
+      index.set(key, []);
+    }
+
+    index.get(key).push(obj);
+  });
+
+  return index;
+}
+
+function setVisibilityByExactNamesFromIndex(model, objectNames, visible) {
+  if (!model?.nameIndex) return 0;
+
+  let hits = 0;
+
+  for (const name of objectNames) {
+    const key = normalizeName(name);
+    const matches = model.nameIndex.get(key) || [];
+
+    for (const obj of matches) {
+      obj.visible = visible;
+      hits += 1;
+      console.log(`Matched exact -> [${obj.type}] ${obj.name}`);
+    }
+  }
+
+  return hits;
+}
+
 function setVisibilityByTokens(root, tokens, visible) {
   let hits = 0;
 
@@ -293,45 +321,6 @@ function setVisibilityByTokens(root, tokens, visible) {
   return hits;
 }
 
-function showAllObjects(root) {
-  root.traverse((obj) => {
-    obj.visible = true;
-  });
-}
-
-function getModelByKey(key) {
-  return loadedModels.find(x => x.key === key);
-}
-function normalizeName(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFKC')
-    .replace(/\s+/g, '')
-    .replace(/:/g, '')
-    .trim();
-}
-
-function setParentObjectVisibilityByNameContains(root, searchToken, visible) {
-  const needle = normalizeName(searchToken);
-  let hits = 0;
-
-  root.traverse((obj) => {
-    if (obj.isMesh) return;
-
-    const objName = normalizeName(obj.name);
-
-    if (!objName) return;
-
-    if (objName.includes(needle)) {
-      obj.visible = visible;
-      hits += 1;
-      console.log(`Matched parent -> [${obj.type}] ${obj.name}`);
-    }
-  });
-
-  return hits;
-}
-
 function hideSteelRollers() {
   const bottom = getModelByKey('bottom');
   if (!bottom) {
@@ -339,13 +328,13 @@ function hideSteelRollers() {
     return;
   }
 
-  const hits = setParentObjectVisibilityByNameContains(
-    bottom.root,
-    'ролка_стоманена_-159x290',
+  const hits = setVisibilityByExactNamesFromIndex(
+    bottom,
+    STEEL_ROLLER_EXACT_NAMES,
     false
   );
 
-  console.log(`Hide steel rollers -> matched parent objects: ${hits}`);
+  console.log(`Hide steel rollers -> matched indexed objects: ${hits}`);
 }
 
 function hideHardware() {
@@ -383,6 +372,20 @@ function dumpNamedNodesForModel(modelKey) {
   }
 
   dumpNodeNames(model.root, modelKey);
+}
+
+function debugLookupExactName(modelKey, name) {
+  const model = getModelByKey(modelKey);
+  if (!model?.nameIndex) {
+    console.warn('Model or nameIndex missing');
+    return;
+  }
+
+  const key = normalizeName(name);
+  const matches = model.nameIndex.get(key) || [];
+
+  console.log(`Lookup "${name}" -> ${matches.length} matches`);
+  matches.forEach(obj => console.log(`[${obj.type}] ${obj.name}`));
 }
 
 async function loadModel(modelConfig) {
@@ -438,7 +441,8 @@ async function loadModel(modelConfig) {
           root,
           meshCount,
           size,
-          center
+          center,
+          nameIndex: buildNameIndex(root)
         });
       },
       undefined,
@@ -479,13 +483,12 @@ async function init() {
       applyOriginalMaterials,
       applyOverrideColor,
       dumpNamedNodesForModel,
-      dumpNodeNames,
-      objectMatchesTokens,
-      setVisibilityByTokens
+      debugLookupExactName
     };
 
     console.log('Loaded models:', loadedModels);
     console.log('dpDebug.dumpNamedNodesForModel("bottom")');
+    console.log('dpDebug.debugLookupExactName("bottom", "Ролка_стоманена_-159x2901")');
   } catch (error) {
     console.error(error);
     setStatus(error.message);
@@ -497,23 +500,6 @@ function animate() {
   controls.update();
   renderer.render(scene, camera);
 }
-
-function setVisibilityByExactObjectNames(root, objectNames, visible) {
-  const targetNames = new Set(objectNames.map(name => name.toLowerCase()));
-  let hits = 0;
-
-  root.traverse((obj) => {
-    const objName = (obj.name || '').toLowerCase();
-
-    if (targetNames.has(objName)) {
-      obj.visible = visible;
-      hits += 1;
-    }
-  });
-
-  return hits;
-}
-
 
 document.getElementById('btnOriginal').addEventListener('click', () => {
   applyOriginalMaterials();
