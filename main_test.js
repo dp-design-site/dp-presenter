@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-const MODEL_WORLD_SCALE = 1000;
-const DEBUG_SHOW_MODEL_ORIGINS = true;
+const DEBUG_SHOW_MODEL_ORIGINS = false;
+const MODEL_WORLD_SCALE = 1;
 
 const MODEL_CONFIG = [
   {
