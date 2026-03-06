@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
+const MODEL_WORLD_SCALE = 1000;
 const DEBUG_SHOW_MODEL_ORIGINS = true;
 
 const MODEL_CONFIG = [
@@ -80,14 +80,14 @@ function setStatus(lines) {
   statusEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
 }
 
-function createModelOriginHelper(size = 400) {
+function createModelOriginHelper(size = 80) {
   const group = new THREE.Group();
 
   const axes = new THREE.AxesHelper(size);
   group.add(axes);
 
   const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(size * 0.04, 16, 16),
+    new THREE.SphereGeometry(size * 0.08, 16, 16),
     new THREE.MeshStandardMaterial({ color: 0xffffff })
   );
   group.add(sphere);
@@ -181,6 +181,10 @@ async function loadModel(modelConfig) {
           modelConfig.offset[2]
         );
 
+        // Inventor GLB изглежда е в метри -> вдигаме го в "мм свят"
+        root.scale.setScalar(MODEL_WORLD_SCALE);
+        root.updateMatrixWorld(true);
+
         let meshCount = 0;
 
         root.traverse((obj) => {
@@ -198,14 +202,16 @@ async function loadModel(modelConfig) {
           }
         });
 
+        // ВАЖНО: мерим bbox ПРЕДИ да добавим helper-а
+        const { size, center } = getModelBox(root);
+
         if (DEBUG_SHOW_MODEL_ORIGINS) {
-          const helper = createModelOriginHelper(300);
+          const helperSize = Math.max(80, Math.min(size.x, size.y, size.z) * 0.08);
+          const helper = createModelOriginHelper(helperSize);
           root.add(helper);
         }
 
         scene.add(root);
-
-        const { size, center } = getModelBox(root);
 
         resolve({
           key: modelConfig.key,
@@ -223,7 +229,6 @@ async function loadModel(modelConfig) {
     );
   });
 }
-
 async function init() {
   try {
     setStatus('Зареждане на GLB файловете...');
