@@ -302,18 +302,50 @@ function showAllObjects(root) {
 function getModelByKey(key) {
   return loadedModels.find(x => x.key === key);
 }
+function normalizeName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKC')
+    .replace(/\s+/g, '')
+    .replace(/:/g, '')
+    .trim();
+}
+
+function setParentObjectVisibilityByNameContains(root, searchToken, visible) {
+  const needle = normalizeName(searchToken);
+  let hits = 0;
+
+  root.traverse((obj) => {
+    if (obj.isMesh) return;
+
+    const objName = normalizeName(obj.name);
+
+    if (!objName) return;
+
+    if (objName.includes(needle)) {
+      obj.visible = visible;
+      hits += 1;
+      console.log(`Matched parent -> [${obj.type}] ${obj.name}`);
+    }
+  });
+
+  return hits;
+}
 
 function hideSteelRollers() {
   const bottom = getModelByKey('bottom');
-  if (!bottom) return;
+  if (!bottom) {
+    console.warn('Bottom model not found');
+    return;
+  }
 
-  const hits = setVisibilityByExactObjectNames(
+  const hits = setParentObjectVisibilityByNameContains(
     bottom.root,
-    STEEL_ROLLER_OBJECT_NAMES,
+    'ролка_стоманена_-159x290',
     false
   );
 
-  console.log(`Hide steel rollers -> matched objects: ${hits}`);
+  console.log(`Hide steel rollers -> matched parent objects: ${hits}`);
 }
 
 function hideHardware() {
