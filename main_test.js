@@ -2,11 +2,32 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const MODEL_FILES = [
-  'AB_Bottom_Steel.glb',
-  'AB_Front.glb',
-  'H-образен захват_DIN2.glb'
+const DEBUG_SHOW_MODEL_ORIGINS = true;
+
+const MODEL_CONFIG = [
+  {
+    key: 'bottom',
+    file: 'AB_Bottom_Steel.glb',
+    offset: [0, 0, 0]
+  },
+  {
+    key: 'front',
+    file: 'AB_Front.glb',
+    offset: [0, 0, 0]
+  },
+  {
+    key: 'rear_system',
+    file: 'H-образен захват_DIN2.glb',
+    offset: [0, 0, 0]
+  }
 ];
+
+const COLOR_PRESETS = {
+  gray:   0x9a9a9a,
+  yellow: 0xffcc00,
+  blue:   0x3b82f6,
+  red:    0xef4444
+};
 
 const app = document.getElementById('app');
 const statusEl = document.getElementById('status');
@@ -20,9 +41,11 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100000
 );
-camera.position.set(2500, 1800, 2500);
+camera.position.set(3000, 2200, 3000);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 app.appendChild(renderer.domElement);
@@ -32,104 +55,201 @@ controls.enableDamping = true;
 controls.target.set(0, 500, 0);
 controls.update();
 
-// Светлини
 const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
 scene.add(ambientLight);
 
-const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.4);
-dirLight1.position.set(2000, 3000, 2000);
+const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight1.position.set(3000, 4000, 2500);
 scene.add(dirLight1);
 
 const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight2.position.set(-2000, 1500, -1500);
+dirLight2.position.set(-2500, 1800, -1500);
 scene.add(dirLight2);
 
-// Helpers
-const grid = new THREE.GridHelper(10000, 100, 0x666666, 0x333333);
+const grid = new THREE.GridHelper(12000, 120, 0x666666, 0x333333);
 scene.add(grid);
 
-const axes = new THREE.AxesHelper(1000);
-scene.add(axes);
+const worldAxes = new THREE.AxesHelper(1000);
+scene.add(worldAxes);
 
 const loader = new GLTFLoader();
 
-async function loadModel(fileName) {
-  return new Promise((resolve, reject) => {
-    loader.load(
-      encodeURI(fileName),
-      (gltf) => {
-        const root = gltf.scene;
-        root.name = fileName;
+const loadedModels = [];
 
-        root.traverse((obj) => {
-          if (obj.isMesh) {
-            obj.castShadow = false;
-            obj.receiveShadow = false;
-            if (obj.material) {
-              obj.material.side = THREE.DoubleSide;
-            }
-          }
-        });
-
-        scene.add(root);
-        resolve(root);
-      },
-      undefined,
-      (error) => reject(new Error(`Грешка при зареждане на ${fileName}: ${error.message || error}`))
-    );
-  });
+function setStatus(lines) {
+  statusEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
 }
 
-function fitCameraToObjects(objects, offset = 1.25) {
+function createModelOriginHelper(size = 400) {
+  const group = new THREE.Group();
+
+  const axes = new THREE.AxesHelper(size);
+  group.add(axes);
+
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(size * 0.04, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xffffff })
+  );
+  group.add(sphere);
+
+  return group;
+}
+
+function rememberOriginalMaterial(mesh) {
+  if (!mesh.userData.dpOriginalMaterial) {
+    mesh.userData.dpOriginalMaterial = mesh.material;
+  }
+}
+
+function applyOriginalMaterials() {
+  for (const model of loadedModels) {
+    model.root.traverse((obj) => {
+      if (!obj.isMesh) return;
+      if (obj.userData.dpOriginalMaterial) {
+        obj.material = obj.userData.dpOriginalMaterial;
+      }
+    });
+  }
+}
+
+function applyOverrideColor(hexColor) {
+  const sharedMaterial = new THREE.MeshStandardMaterial({
+    color: hexColor,
+    roughness: 0.65,
+    metalness: 0.1
+  });
+
+  for (const model of loadedModels) {
+    model.root.traverse((obj) => {
+      if (!obj.isMesh) return;
+      rememberOriginalMaterial(obj);
+      obj.material = sharedMaterial;
+    });
+  }
+}
+
+function getModelBox(root) {
+  const box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  return { box, size, center };
+}
+
+function formatVec3(v) {
+  return `${v.x.toFixed(3)}, ${v.y.toFixed(3)}, ${v.z.toFixed(3)}`;
+}
+
+function fitCameraToObjects(objects, offset = 1.35) {
   const box = new THREE.Box3();
 
   for (const obj of objects) {
     box.expandByObject(obj);
   }
 
-  if (box.isEmpty()) {
-    console.warn('Bounding box is empty.');
-    return;
-  }
+  if (box.isEmpty()) return;
 
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-
   const maxDim = Math.max(size.x, size.y, size.z);
+
   const fov = THREE.MathUtils.degToRad(camera.fov);
-  let cameraZ = Math.abs((maxDim / 2) / Math.tan(fov / 2));
-  cameraZ *= offset;
+  let distance = Math.abs((maxDim / 2) / Math.tan(fov / 2));
+  distance *= offset;
 
-  const dir = new THREE.Vector3(1, 0.7, 1).normalize();
+  const direction = new THREE.Vector3(1, 0.65, 1).normalize();
 
-  camera.position.copy(center).add(dir.multiplyScalar(cameraZ));
+  camera.position.copy(center).add(direction.multiplyScalar(distance));
   camera.near = Math.max(0.1, maxDim / 1000);
-  camera.far = Math.max(10000, maxDim * 20);
+  camera.far = Math.max(10000, maxDim * 30);
   camera.updateProjectionMatrix();
 
   controls.target.copy(center);
   controls.update();
 }
 
+async function loadModel(modelConfig) {
+  return new Promise((resolve, reject) => {
+    loader.load(
+      encodeURI(modelConfig.file),
+      (gltf) => {
+        const root = gltf.scene;
+        root.name = modelConfig.file;
+
+        root.position.set(
+          modelConfig.offset[0],
+          modelConfig.offset[1],
+          modelConfig.offset[2]
+        );
+
+        let meshCount = 0;
+
+        root.traverse((obj) => {
+          if (!obj.isMesh) return;
+
+          meshCount += 1;
+          rememberOriginalMaterial(obj);
+
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach((m) => {
+              if (m) m.side = THREE.DoubleSide;
+            });
+          } else if (obj.material) {
+            obj.material.side = THREE.DoubleSide;
+          }
+        });
+
+        if (DEBUG_SHOW_MODEL_ORIGINS) {
+          const helper = createModelOriginHelper(300);
+          root.add(helper);
+        }
+
+        scene.add(root);
+
+        const { size, center } = getModelBox(root);
+
+        resolve({
+          key: modelConfig.key,
+          file: modelConfig.file,
+          root,
+          meshCount,
+          size,
+          center
+        });
+      },
+      undefined,
+      (error) => {
+        reject(new Error(`Грешка при зареждане на ${modelConfig.file}: ${error.message || error}`));
+      }
+    );
+  });
+}
+
 async function init() {
   try {
-    statusEl.textContent = 'Зареждане на GLB файловете...';
+    setStatus('Зареждане на GLB файловете...');
 
-    const loadedObjects = [];
-
-    for (const file of MODEL_FILES) {
-      statusEl.textContent = `Зареждане: ${file}`;
-      const obj = await loadModel(file);
-      loadedObjects.push(obj);
+    for (const modelConfig of MODEL_CONFIG) {
+      setStatus(`Зареждане: ${modelConfig.file}`);
+      const model = await loadModel(modelConfig);
+      loadedModels.push(model);
     }
 
-    fitCameraToObjects(loadedObjects);
+    fitCameraToObjects(loadedModels.map(x => x.root));
 
-    statusEl.textContent = `Заредени ${loadedObjects.length} файла успешно.`;
-    console.log('Loaded models:', loadedObjects.map(x => x.name));
+    const lines = ['Заредени файлове:'];
+    for (const model of loadedModels) {
+      lines.push(
+        `- ${model.file} | meshes: ${model.meshCount} | center: ${formatVec3(model.center)} | size: ${formatVec3(model.size)}`
+      );
+    }
+
+    setStatus(lines);
+
+    window.dpModels = loadedModels;
+    console.log('Loaded models:', loadedModels);
   } catch (error) {
     console.error(error);
-    statusEl.textContent = error.message;
+    setStatus(error.message);
   }
 }
 
@@ -138,6 +258,26 @@ function animate() {
   controls.update();
   renderer.render(scene, camera);
 }
+
+document.getElementById('btnOriginal').addEventListener('click', () => {
+  applyOriginalMaterials();
+});
+
+document.getElementById('btnGray').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.gray);
+});
+
+document.getElementById('btnYellow').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.yellow);
+});
+
+document.getElementById('btnBlue').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.blue);
+});
+
+document.getElementById('btnRed').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.red);
+});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
