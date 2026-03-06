@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 const DEBUG_SHOW_MODEL_ORIGINS = false;
 const MODEL_WORLD_SCALE = 1;
 
@@ -28,6 +29,30 @@ const COLOR_PRESETS = {
   blue:   0x3b82f6,
   red:    0xef4444
 };
+
+// Тук можеш да добавяш думи за части, които НЕ искаш да се боядисват
+const PAINT_SKIP_TOKENS = [
+  'bolt',
+  'bolts',
+  'nut',
+  'nuts',
+  'washer',
+  'washers',
+  'screw',
+  'screws',
+  'fastener',
+  'fasteners',
+  'гайка',
+  'гайки',
+  'болт',
+  'болтове',
+  'шайба',
+  'шайби',
+  'винт',
+  'винтове',
+  'din',
+  'iso'
+];
 
 const app = document.getElementById('app');
 const statusEl = document.getElementById('status');
@@ -75,12 +100,13 @@ scene.add(worldAxes);
 const loader = new GLTFLoader();
 
 const loadedModels = [];
+let activeOverrideMaterial = null;
 
 function setStatus(lines) {
   statusEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
 }
 
-function createModelOriginHelper(size = 80) {
+function createModelOriginHelper(size = 120) {
   const group = new THREE.Group();
 
   const axes = new THREE.AxesHelper(size);
@@ -101,10 +127,56 @@ function rememberOriginalMaterial(mesh) {
   }
 }
 
+function disposeActiveOverrideMaterial() {
+  if (activeOverrideMaterial) {
+    activeOverrideMaterial.dispose();
+    activeOverrideMaterial = null;
+  }
+}
+
+function getMaterialName(material) {
+  if (Array.isArray(material)) {
+    return material
+      .map(m => (m?.name || '').toLowerCase())
+      .join(' ');
+  }
+
+  return (material?.name || '').toLowerCase();
+}
+
+function getNodePath(node) {
+  const names = [];
+  let current = node;
+
+  while (current) {
+    if (current.name) {
+      names.push(current.name.toLowerCase());
+    }
+    current = current.parent;
+  }
+
+  return names.join(' / ');
+}
+
+function shouldSkipPaint(mesh) {
+  const meshName = (mesh.name || '').toLowerCase();
+  const materialName = getMaterialName(mesh.material);
+  const nodePath = getNodePath(mesh);
+
+  return PAINT_SKIP_TOKENS.some(token =>
+    meshName.includes(token) ||
+    materialName.includes(token) ||
+    nodePath.includes(token)
+  );
+}
+
 function applyOriginalMaterials() {
+  disposeActiveOverrideMaterial();
+
   for (const model of loadedModels) {
     model.root.traverse((obj) => {
       if (!obj.isMesh) return;
+
       if (obj.userData.dpOriginalMaterial) {
         obj.material = obj.userData.dpOriginalMaterial;
       }
@@ -112,18 +184,29 @@ function applyOriginalMaterials() {
   }
 }
 
-function applyOverrideColor(hexColor) {
-  const sharedMaterial = new THREE.MeshStandardMaterial({
+function createOverrideMaterial(hexColor) {
+  return new THREE.MeshStandardMaterial({
     color: hexColor,
-    roughness: 0.65,
-    metalness: 0.1
+    roughness: 0.28,
+    metalness: 0.18
   });
+}
+
+function applyOverrideColor(hexColor) {
+  disposeActiveOverrideMaterial();
+  activeOverrideMaterial = createOverrideMaterial(hexColor);
 
   for (const model of loadedModels) {
     model.root.traverse((obj) => {
       if (!obj.isMesh) return;
+
       rememberOriginalMaterial(obj);
-      obj.material = sharedMaterial;
+
+      if (shouldSkipPaint(obj)) {
+        obj.material = obj.userData.dpOriginalMaterial;
+      } else {
+        obj.material = activeOverrideMaterial;
+      }
     });
   }
 }
@@ -181,7 +264,6 @@ async function loadModel(modelConfig) {
           modelConfig.offset[2]
         );
 
-        // Inventor GLB изглежда е в метри -> вдигаме го в "мм свят"
         root.scale.setScalar(MODEL_WORLD_SCALE);
         root.updateMatrixWorld(true);
 
@@ -202,16 +284,18 @@ async function loadModel(modelConfig) {
           }
         });
 
-        // ВАЖНО: мерим bbox ПРЕДИ да добавим helper-а
         const { size, center } = getModelBox(root);
 
-        if (DEBUG_SHOW_MODEL_ORIGINS) {
-          const helperSize = Math.max(80, Math.min(size.x, size.y, size.z) * 0.08);
-          const helper = createModelOriginHelper(helperSize);
-          root.add(helper);
-        }
-
         scene.add(root);
+        root.updateMatrixWorld(true);
+
+        if (DEBUG_SHOW_MODEL_ORIGINS) {
+          const helper = createModelOriginHelper(120);
+          const worldPos = new THREE.Vector3();
+          root.getWorldPosition(worldPos);
+          helper.position.copy(worldPos);
+          scene.add(helper);
+        }
 
         resolve({
           key: modelConfig.key,
@@ -229,6 +313,7 @@ async function loadModel(modelConfig) {
     );
   });
 }
+
 async function init() {
   try {
     setStatus('Зареждане на GLB файловете...');
