@@ -26,10 +26,10 @@ const MODEL_CONFIG = [
 ];
 
 const COLOR_PRESETS = {
-  gray:   0x9a9a9a,
+  gray: 0x9a9a9a,
   yellow: 0xffcc00,
-  blue:   0x3b82f6,
-  red:    0xef4444
+  blue: 0x3b82f6,
+  red: 0xef4444
 };
 
 const PAINT_SKIP_TOKENS = [
@@ -88,9 +88,7 @@ const camera = new THREE.PerspectiveCamera(
 camera.up.set(0, 0, 1);
 camera.position.set(-7000, -5000, 3500);
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: true
-});
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 app.appendChild(renderer.domElement);
@@ -156,19 +154,21 @@ function disposeActiveOverrideMaterial() {
   }
 }
 
-function getMaterialName(material) {
-  if (Array.isArray(material)) {
-    return material
+function getObjectMaterialName(obj) {
+  if (!obj.isMesh) return '';
+
+  if (Array.isArray(obj.material)) {
+    return obj.material
       .map(m => (m?.name || '').toLowerCase())
       .join(' ');
   }
 
-  return (material?.name || '').toLowerCase();
+  return (obj.material?.name || '').toLowerCase();
 }
 
-function getNodePath(node) {
+function getObjectPath(obj) {
   const names = [];
-  let current = node;
+  let current = obj;
 
   while (current) {
     if (current.name) {
@@ -180,23 +180,23 @@ function getNodePath(node) {
   return names.join(' / ');
 }
 
-function nodeMatchesTokens(obj, tokens) {
-  const name = (obj.name || '').toLowerCase();
-  const materialName = getMaterialName(obj.material);
-  const nodePath = getNodePath(obj);
+function objectMatchesTokens(obj, tokens) {
+  const objectName = (obj.name || '').toLowerCase();
+  const objectPath = getObjectPath(obj);
+  const materialName = getObjectMaterialName(obj);
 
   return tokens.some(token => {
     const search = token.toLowerCase();
     return (
-      name.includes(search) ||
-      materialName.includes(search) ||
-      nodePath.includes(search)
+      objectName.includes(search) ||
+      objectPath.includes(search) ||
+      materialName.includes(search)
     );
   });
 }
 
 function shouldSkipPaint(mesh) {
-  return nodeMatchesTokens(mesh, PAINT_SKIP_TOKENS);
+  return objectMatchesTokens(mesh, PAINT_SKIP_TOKENS);
 }
 
 function applyOriginalMaterials() {
@@ -284,9 +284,7 @@ function setVisibilityByTokens(root, tokens, visible) {
   let hits = 0;
 
   root.traverse((obj) => {
-    if (!obj.isMesh) return;
-
-    if (nodeMatchesTokens(obj, tokens)) {
+    if (objectMatchesTokens(obj, tokens)) {
       obj.visible = visible;
       hits += 1;
     }
@@ -295,9 +293,8 @@ function setVisibilityByTokens(root, tokens, visible) {
   return hits;
 }
 
-function showAllMeshes(root) {
+function showAllObjects(root) {
   root.traverse((obj) => {
-    if (!obj.isMesh) return;
     obj.visible = true;
   });
 }
@@ -311,7 +308,7 @@ function hideSteelRollers() {
   if (!bottom) return;
 
   const hits = setVisibilityByTokens(bottom.root, STEEL_ROLLER_TOKENS, false);
-  console.log(`Hide steel rollers -> matched meshes: ${hits}`);
+  console.log(`Hide steel rollers -> matched objects: ${hits}`);
 }
 
 function hideHardware() {
@@ -321,13 +318,34 @@ function hideHardware() {
     totalHits += setVisibilityByTokens(model.root, HARDWARE_TOKENS, false);
   }
 
-  console.log(`Hide hardware -> matched meshes: ${totalHits}`);
+  console.log(`Hide hardware -> matched objects: ${totalHits}`);
 }
 
 function showAll() {
   for (const model of loadedModels) {
-    showAllMeshes(model.root);
+    showAllObjects(model.root);
   }
+}
+
+function dumpNodeNames(root, label = 'model') {
+  console.groupCollapsed(`NODE DUMP: ${label}`);
+
+  root.traverse((obj) => {
+    if (!obj.name) return;
+    console.log(`[${obj.type}] ${obj.name}`);
+  });
+
+  console.groupEnd();
+}
+
+function dumpNamedNodesForModel(modelKey) {
+  const model = getModelByKey(modelKey);
+  if (!model) {
+    console.warn(`Model not found: ${modelKey}`);
+    return;
+  }
+
+  dumpNodeNames(model.root, modelKey);
 }
 
 async function loadModel(modelConfig) {
@@ -423,11 +441,14 @@ async function init() {
       showAll,
       applyOriginalMaterials,
       applyOverrideColor,
-      nodeMatchesTokens,
+      dumpNamedNodesForModel,
+      dumpNodeNames,
+      objectMatchesTokens,
       setVisibilityByTokens
     };
 
     console.log('Loaded models:', loadedModels);
+    console.log('dpDebug.dumpNamedNodesForModel("bottom")');
   } catch (error) {
     console.error(error);
     setStatus(error.message);
