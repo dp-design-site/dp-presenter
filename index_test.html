@@ -27,10 +27,11 @@
       top: 12px;
       left: 12px;
       z-index: 20;
-      background: rgba(0, 0, 0, 0.58);
+      background: rgba(0, 0, 0, 0.60);
       padding: 12px;
       border-radius: 10px;
-      min-width: 320px;
+      min-width: 360px;
+      max-width: 560px;
       backdrop-filter: blur(4px);
     }
 
@@ -46,11 +47,21 @@
       line-height: 1.45;
     }
 
-    #buttons {
+    .group-title {
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    #buttons,
+    #visibilityButtons {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 10px;
     }
 
     button {
@@ -73,6 +84,10 @@
     .btn-yellow   { background: #d4aa00; color: #111; }
     .btn-blue     { background: #2563eb; }
     .btn-red      { background: #dc2626; }
+
+    .btn-hide     { background: #7c3aed; }
+    .btn-show     { background: #059669; }
+    .btn-reset    { background: #475569; }
 
     #status {
       margin-top: 10px;
@@ -103,14 +118,22 @@
       <h1>DP Design Pilot / GLB PoC</h1>
 
       <div class="row">Orbit: ляв бутон | Pan: десен бутон | Zoom: колелце</div>
-      <div class="row">Тест: 3 отделни GLB файла в една обща сцена</div>
+      <div class="row">Viewer: Z-up | 3 отделни GLB файла в една обща сцена</div>
 
+      <div class="group-title">Paint</div>
       <div id="buttons">
         <button class="btn-original" id="btnOriginal">Original</button>
         <button class="btn-gray" id="btnGray">Gray</button>
         <button class="btn-yellow" id="btnYellow">Yellow</button>
         <button class="btn-blue" id="btnBlue">Blue</button>
         <button class="btn-red" id="btnRed">Red</button>
+      </div>
+
+      <div class="group-title">Visibility test</div>
+      <div id="visibilityButtons">
+        <button class="btn-hide" id="btnHideSteelRollers">Hide steel rollers</button>
+        <button class="btn-hide" id="btnHideHardware">Hide DIN hardware</button>
+        <button class="btn-show" id="btnShowAll">Show all</button>
       </div>
 
       <div id="status">Зареждане...</div>
