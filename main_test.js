@@ -55,9 +55,9 @@ const PAINT_SKIP_TOKENS = [
   'iso'
 ];
 
-const STEEL_ROLLER_TOKENS = [
-  'ролка стоманена',
-  'steel roller'
+const STEEL_ROLLER_OBJECT_NAMES = [
+  'Ролка_стоманена_-159x2901',
+  'Ролка_стоманена_-159x2902'
 ];
 
 const HARDWARE_TOKENS = [
@@ -307,7 +307,12 @@ function hideSteelRollers() {
   const bottom = getModelByKey('bottom');
   if (!bottom) return;
 
-  const hits = setVisibilityByTokens(bottom.root, STEEL_ROLLER_TOKENS, false);
+  const hits = setVisibilityByExactObjectNames(
+    bottom.root,
+    STEEL_ROLLER_OBJECT_NAMES,
+    false
+  );
+
   console.log(`Hide steel rollers -> matched objects: ${hits}`);
 }
 
@@ -459,6 +464,28 @@ function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
+}
+
+function setVisibilityByExactObjectNames(root, objectNames, visible) {
+  const targetNames = new Set(objectNames.map(name => name.toLowerCase()));
+  let hits = 0;
+
+  root.traverse((obj) => {
+    const objName = (obj.name || '').toLowerCase();
+
+    if (targetNames.has(objName)) {
+      obj.visible = visible;
+      hits += 1;
+    }
+  });
+
+  return hits;
+}
+
+function showAllObjects(root) {
+  root.traverse((obj) => {
+    obj.visible = true;
+  });
 }
 
 document.getElementById('btnOriginal').addEventListener('click', () => {
