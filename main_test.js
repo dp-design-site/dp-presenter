@@ -582,14 +582,6 @@ document.getElementById('btnHideSteelRollers').addEventListener('click', () => {
   hideSteelRollers();
 });
 
-document.getElementById('btnHideHardware').addEventListener('click', () => {
-  hideHardware();
-});
-
-document.getElementById('btnShowAll').addEventListener('click', () => {
-  showAll();
-});
-
 document.getElementById('btnOriginal').addEventListener('click', () => {
   applyOriginalMaterials();
 });
