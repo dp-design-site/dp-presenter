@@ -128,6 +128,7 @@ function setParentObjectVisibilityByNormalizedContains(root, searchNeedle, visib
 }
 
 function setStatus(lines) {
+  if (!statusEl) return;
   statusEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
 }
 
@@ -360,6 +361,22 @@ function hideSteelRollers() {
   console.log(`Hide steel rollers -> matched normalized parent objects: ${hits}`);
 }
 
+function showSteelRollers() {
+  const bottom = getModelByKey('bottom');
+  if (!bottom) {
+    console.warn('Bottom model not found');
+    return;
+  }
+
+  const hits = setParentObjectVisibilityByNormalizedContains(
+    bottom.root,
+    'ролка стоманена 159x290',
+    true
+  );
+
+  console.log(`Show steel rollers -> matched normalized parent objects: ${hits}`);
+}
+
 function debugNormalizedBottomNames() {
   const bottom = getModelByKey('bottom');
   if (!bottom) return;
@@ -571,6 +588,34 @@ document.getElementById('btnHideHardware').addEventListener('click', () => {
 
 document.getElementById('btnShowAll').addEventListener('click', () => {
   showAll();
+});
+
+document.getElementById('btnOriginal').addEventListener('click', () => {
+  applyOriginalMaterials();
+});
+
+document.getElementById('btnGray').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.gray);
+});
+
+document.getElementById('btnYellow').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.yellow);
+});
+
+document.getElementById('btnBlue').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.blue);
+});
+
+document.getElementById('btnRed').addEventListener('click', () => {
+  applyOverrideColor(COLOR_PRESETS.red);
+});
+
+document.getElementById('btnHideSteelRollers').addEventListener('click', () => {
+  hideSteelRollers();
+});
+
+document.getElementById('btnShowSteelRollers').addEventListener('click', () => {
+  showSteelRollers();
 });
 
 window.addEventListener('resize', () => {
