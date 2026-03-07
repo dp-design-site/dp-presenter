@@ -98,10 +98,32 @@ let activeOverrideMaterial = null;
 function normalizeName(value) {
   return String(value || '')
     .toLowerCase()
-    .normalize('NFKC')
-    .replace(/\s+/g, '')
-    .replace(/:/g, '')
+    .normalize('NFKD')
+    .replace(/[х]/g, 'x')           // кирилско х -> латинско x
+    .replace(/[–—−]/g, '-')         // всички тирета -> обикновено -
+    .replace(/[_\-\s:()]+/g, '')    // махаме separator-ите
+    .replace(/[^\p{L}\p{N}]/gu, '') // махаме друг junk
     .trim();
+}
+
+function setParentObjectVisibilityByNormalizedContains(root, searchNeedle, visible) {
+  const needle = normalizeName(searchNeedle);
+  let hits = 0;
+
+  root.traverse((obj) => {
+    if (obj.isMesh) return;
+    if (!obj.name) return;
+
+    const normalizedObjectName = normalizeName(obj.name);
+
+    if (normalizedObjectName.includes(needle)) {
+      obj.visible = visible;
+      hits += 1;
+      console.log(`Matched normalized parent -> [${obj.type}] ${obj.name}`);
+    }
+  });
+
+  return hits;
 }
 
 function setStatus(lines) {
@@ -328,13 +350,29 @@ function hideSteelRollers() {
     return;
   }
 
-  const hits = setVisibilityByExactNamesFromIndex(
-    bottom,
-    STEEL_ROLLER_EXACT_NAMES,
+  const hits = setParentObjectVisibilityByNormalizedContains(
+    bottom.root,
+    'ролка стоманена 159x290',
     false
   );
 
-  console.log(`Hide steel rollers -> matched indexed objects: ${hits}`);
+  console.log(`Hide steel rollers -> matched normalized parent objects: ${hits}`);
+}
+
+function debugNormalizedBottomNames() {
+  const bottom = getModelByKey('bottom');
+  if (!bottom) return;
+
+  console.groupCollapsed('BOTTOM NORMALIZED NAMES');
+
+  bottom.root.traverse((obj) => {
+    if (obj.isMesh) return;
+    if (!obj.name) return;
+
+    console.log(obj.name, '=>', normalizeName(obj.name));
+  });
+
+  console.groupEnd();
 }
 
 function hideHardware() {
@@ -483,7 +521,8 @@ async function init() {
       applyOriginalMaterials,
       applyOverrideColor,
       dumpNamedNodesForModel,
-      debugLookupExactName
+      debugLookupExactName,
+      debugNormalizedBottomNames
     };
 
     console.log('Loaded models:', loadedModels);
