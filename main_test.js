@@ -24,7 +24,7 @@ const PAINT_SKIP_TOKENS = [
   'bolt', 'bolts', 'nut', 'nuts', 'washer', 'washers', 'screw', 'screws',
   'fastener', 'fasteners',
   'гайка', 'гайки', 'болт', 'болтове', 'шайба', 'шайби', 'винт', 'винтове',
-  'din', 'iso'
+  
 ];
 
 // exact names from your debug dump
