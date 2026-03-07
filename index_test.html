@@ -24,55 +24,35 @@
 
     #panel {
       position: absolute;
-      top: 12px;
-      left: 12px;
+      top: 10px;
+      left: 10px;
       z-index: 20;
-      background: rgba(0, 0, 0, 0.60);
-      padding: 12px;
-      border-radius: 10px;
-      min-width: 360px;
-      max-width: 560px;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 8px;
+      border-radius: 12px;
       backdrop-filter: blur(4px);
-    }
-
-    #panel h1 {
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    #panel .row {
-      margin-bottom: 8px;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .group-title {
-      margin-top: 10px;
-      margin-bottom: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      opacity: 0.9;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    #buttons,
-    #visibilityButtons {
       display: flex;
+      flex-direction: column;
       gap: 8px;
+      max-width: calc(100vw - 20px);
+    }
+
+    .button-row {
+      display: flex;
       flex-wrap: wrap;
+      gap: 8px;
     }
 
     button {
       border: 0;
-      border-radius: 8px;
-      padding: 8px 10px;
+      border-radius: 10px;
+      padding: 8px 12px;
       cursor: pointer;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: white;
       background: #3a3a3a;
+      min-height: 38px;
     }
 
     button:hover {
@@ -87,17 +67,30 @@
 
     .btn-hide     { background: #7c3aed; }
     .btn-show     { background: #059669; }
-    .btn-reset    { background: #475569; }
-
-    #status {
-      margin-top: 10px;
-      font-size: 12px;
-      opacity: 0.95;
-      white-space: pre-line;
-    }
 
     canvas {
       display: block;
+    }
+
+    @media (max-width: 768px) {
+      #panel {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        max-width: none;
+        padding: 8px;
+        gap: 6px;
+      }
+
+      .button-row {
+        gap: 6px;
+      }
+
+      button {
+        font-size: 12px;
+        padding: 8px 10px;
+        min-height: 36px;
+      }
     }
   </style>
 
@@ -115,13 +108,7 @@
 <body>
   <div id="app">
     <div id="panel">
-      <h1>DP Design Pilot / GLB PoC</h1>
-
-      <div class="row">Orbit: ляв бутон | Pan: десен бутон | Zoom: колелце</div>
-      <div class="row">Viewer: Z-up | 3 отделни GLB файла в една обща сцена</div>
-
-      <div class="group-title">Paint</div>
-      <div id="buttons">
+      <div class="button-row">
         <button class="btn-original" id="btnOriginal">Original</button>
         <button class="btn-gray" id="btnGray">Gray</button>
         <button class="btn-yellow" id="btnYellow">Yellow</button>
@@ -129,17 +116,13 @@
         <button class="btn-red" id="btnRed">Red</button>
       </div>
 
-      <div class="group-title">Visibility test</div>
-      <div id="visibilityButtons">
-        <button class="btn-hide" id="btnHideSteelRollers">Hide steel rollers</button>
-        <button class="btn-hide" id="btnHideHardware">Hide DIN hardware</button>
-        <button class="btn-show" id="btnShowAll">Show all</button>
+      <div class="button-row">
+        <button class="btn-hide" id="btnHideSteelRollers">Hide rollers</button>
+        <button class="btn-show" id="btnShowSteelRollers">Show rollers</button>
       </div>
-
-      <div id="status">Зареждане...</div>
     </div>
   </div>
 
-  <script type="module" src="./main_test.js"></script>
+  <script type="module" src="./main_test.js?v=3"></script>
 </body>
 </html>
