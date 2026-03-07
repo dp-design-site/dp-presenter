@@ -24,13 +24,14 @@ const PAINT_SKIP_TOKENS = [
   'bolt', 'bolts', 'nut', 'nuts', 'washer', 'washers', 'screw', 'screws',
   'fastener', 'fasteners',
   'гайка', 'гайки', 'болт', 'болтове', 'шайба', 'шайби', 'винт', 'винтове',
+  'Протектор зад бюгел:1'
   
 ];
 
 // exact names from your debug dump
 const STEEL_ROLLER_EXACT_NAMES = [
-  'Ролка_стоманена_-159x2901',
-  'Ролка_стоманена_-159x2902'
+  'Ролка стоманена -159x2901',
+  'Ролка стоманена -159x2902'
 ];
 
 const HARDWARE_TOKENS = [
