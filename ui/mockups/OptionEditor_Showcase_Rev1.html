@@ -1,435 +1,1100 @@
-import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Box,
-  Image as ImageIcon,
-  Palette,
-  SlidersHorizontal,
-  CheckCircle2,
-  Settings2,
-  Save,
-  Eye,
-  Sparkles,
-  Layers3,
-  ChevronDown,
-  Package,
-  CircleDollarSign,
-  Clock3,
-  ShieldCheck,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DP Design Pilot — Option Editor Showcase</title>
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --line: #e2e8f0;
+      --accent: #d9ff57;
+      --dark: #0f172a;
+      --shadow: 0 20px 50px rgba(15, 23, 42, 0.10);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --preview-top: #1e293b;
+      --preview-bottom: #020617;
+      --selected-color: #334155;
+    }
 
-const hookOptions = [
-  { id: 'din2_h', name: 'H-образен DIN2', price: 1850, labor: 3.2, note: 'Стандартен и най-търсен вариант' },
-  { id: 'din2_round', name: 'Кръгъл DIN2', price: 1690, labor: 2.8, note: 'По-икономична конфигурация' },
-  { id: 'din3_heavy', name: 'DIN3 Heavy Duty', price: 2490, labor: 4.4, note: 'За по-тежки натоварвания' },
-];
+    * {
+      box-sizing: border-box;
+    }
 
-const rollerOptions = [
-  { id: 'steel', name: 'Стоманени ролки', delta: 0 },
-  { id: 'polyamide', name: 'Полиамидни ролки', delta: 420 },
-  { id: 'polyurethane', name: 'Полиуретанови ролки', delta: 560 },
-];
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
 
-const colorOptions = [
-  { id: 'ral9005', name: 'RAL 9005', hex: '#0f172a', delta: 0 },
-  { id: 'ral7016', name: 'RAL 7016', hex: '#334155', delta: 95 },
-  { id: 'ral3020', name: 'RAL 3020', hex: '#dc2626', delta: 140 },
-  { id: 'galvanized', name: 'Raw / Galvanized', hex: '#9ca3af', delta: -80 },
-];
+    body {
+      padding: 24px;
+    }
 
-const floorOptions = [
-  { id: 'steel', name: 'Steel floor', delta: 0 },
-  { id: 'plywood', name: 'Plywood floor', delta: -220 },
-  { id: 'hybrid', name: 'Hybrid floor', delta: 160 },
-];
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
 
-export default function OptionEditor_Showcase_Rev1() {
-  const [hook, setHook] = useState('din2_h');
-  const [roller, setRoller] = useState('steel');
-  const [color, setColor] = useState('ral7016');
-  const [floor, setFloor] = useState('steel');
-  const [length, setLength] = useState('6200');
-  const [printLogo, setPrintLogo] = useState(true);
-  const [autoDocs, setAutoDocs] = useState(true);
-  const [premiumPreview, setPremiumPreview] = useState(false);
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
 
-  const hookData = hookOptions.find((x) => x.id === hook)!;
-  const rollerData = rollerOptions.find((x) => x.id === roller)!;
-  const colorData = colorOptions.find((x) => x.id === color)!;
-  const floorData = floorOptions.find((x) => x.id === floor)!;
+    .hero-header {
+      padding: 24px 28px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
 
-  const pricing = useMemo(() => {
-    const base = 28450;
-    const lengthNum = Number(length) || 6200;
-    const lengthDelta = Math.max(0, lengthNum - 6200) * 1.85;
-    const printDelta = printLogo ? 380 : 0;
-    const previewDelta = premiumPreview ? 90 : 0;
-    const subtotal =
-      base +
-      hookData.price +
-      rollerData.delta +
-      colorData.delta +
-      floorData.delta +
-      lengthDelta +
-      printDelta +
-      previewDelta;
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
 
-    const managerMargin = subtotal * 0.12;
-    const final = subtotal + managerMargin;
-    const labor = 34 + hookData.labor + (printLogo ? 0.8 : 0) + (roller === 'polyurethane' ? 0.6 : 0);
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+    }
 
-    return {
-      base,
-      lengthDelta,
-      printDelta,
-      previewDelta,
-      subtotal,
-      managerMargin,
-      final,
-      labor,
-    };
-  }, [length, printLogo, premiumPreview, hookData, rollerData, colorData, floorData, roller]);
+    .badge-accent {
+      background: var(--accent);
+      border-color: transparent;
+    }
 
-  return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-6">
-      <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="space-y-4"
-        >
-          <Card className="overflow-hidden rounded-3xl border-0 shadow-xl">
-            <CardHeader className="border-b bg-white/90 pb-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <Badge className="rounded-full bg-lime-300 px-3 py-1 text-slate-900 hover:bg-lime-300">
-                      DP Design Pilot
-                    </Badge>
-                    <Badge variant="secondary" className="rounded-full">Option Editor</Badge>
-                  </div>
-                  <CardTitle className="text-2xl font-semibold text-slate-900">
-                    ABTRPR / Захват и ходова конфигурация
-                  </CardTitle>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Един фокусиран екран за избор, визуализация и бизнес ефект — без шум и без тежки таблици.
-                  </p>
-                </div>
+    .title {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.15;
+      font-weight: 800;
+    }
 
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" className="rounded-2xl bg-white">
-                    <Eye className="mr-2 h-4 w-4" />
-                    Viewer mode
-                  </Button>
-                  <Button variant="outline" className="rounded-2xl bg-white">
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Генерирай изображение
-                  </Button>
-                  <Button className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800">
-                    <Save className="mr-2 h-4 w-4" />
-                    Запази опцията
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 760px;
+    }
 
-            <CardContent className="p-0">
-              <div className="grid gap-0 xl:grid-cols-[1fr_320px]">
-                <div className="relative min-h-[430px] bg-[radial-gradient(circle_at_top,#1e293b_0%,#0f172a_48%,#020617_100%)] p-4 md:p-6">
-                  <div className="absolute left-5 top-5 flex gap-2">
-                    <Badge className="rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/10">
-                      <Box className="mr-1.5 h-3.5 w-3.5" /> Multi-GLB scene
-                    </Badge>
-                    <Badge className="rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/10">
-                      <Layers3 className="mr-1.5 h-3.5 w-3.5" /> Live modules
-                    </Badge>
-                  </div>
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
 
-                  <div className="flex h-full items-center justify-center">
-                    <div className="relative h-[340px] w-full max-w-[780px] overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-2xl backdrop-blur-sm">
-                      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.06)_1px,transparent_1px)] bg-[size:36px_36px] opacity-30" />
+    .btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+      white-space: nowrap;
+    }
 
-                      <div className="absolute bottom-10 left-1/2 h-40 w-[78%] -translate-x-1/2 rounded-[30px] border border-white/10 bg-slate-700/90 shadow-2xl" />
-                      <div className="absolute bottom-14 left-[18%] h-14 w-24 rounded-2xl bg-slate-500/90 shadow-lg ring-1 ring-white/10" />
-                      <div className="absolute bottom-14 right-[18%] h-14 w-24 rounded-2xl bg-slate-500/90 shadow-lg ring-1 ring-white/10" />
+    .btn:hover {
+      transform: translateY(-1px);
+    }
 
-                      <div className="absolute bottom-20 left-[10%] h-16 w-16 rounded-full border-4 border-slate-300 bg-slate-600 shadow-lg" />
-                      <div className="absolute bottom-20 left-[23%] h-16 w-16 rounded-full border-4 border-slate-300 bg-slate-600 shadow-lg" />
-                      <div className="absolute bottom-20 right-[23%] h-16 w-16 rounded-full border-4 border-slate-300 bg-slate-600 shadow-lg" />
-                      <div className="absolute bottom-20 right-[10%] h-16 w-16 rounded-full border-4 border-slate-300 bg-slate-600 shadow-lg" />
+    .btn-dark {
+      background: var(--dark);
+      color: #fff;
+    }
 
-                      <div className="absolute left-[26%] top-[22%] h-32 w-[48%] rounded-[26px] border border-white/10 shadow-xl"
-                        style={{ background: `linear-gradient(180deg, ${colorData.hex}, #475569)` }}
-                      />
+    .btn-light {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
 
-                      <div className="absolute right-[12%] top-[30%] flex h-24 w-24 items-center justify-center rounded-[24px] border border-cyan-300/20 bg-cyan-400/15 shadow-lg backdrop-blur-sm">
-                        <Package className="h-10 w-10 text-cyan-200" />
-                      </div>
+    .hero-body {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      min-height: 560px;
+    }
 
-                      <div className="absolute left-5 bottom-5 rounded-2xl bg-black/35 px-3 py-2 text-xs text-slate-200 backdrop-blur-sm">
-                        Active hook: <span className="font-semibold text-white">{hookData.name}</span>
-                      </div>
+    .preview-wrap {
+      position: relative;
+      padding: 24px;
+      background: radial-gradient(circle at top, var(--preview-top) 0%, #0f172a 46%, var(--preview-bottom) 100%);
+      overflow: hidden;
+    }
 
-                      <div className="absolute right-5 bottom-5 rounded-2xl bg-black/35 px-3 py-2 text-xs text-slate-200 backdrop-blur-sm">
-                        Roller set: <span className="font-semibold text-white">{rollerData.name}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+    .preview-top-badges {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
 
-                <div className="border-l bg-white p-4 md:p-5">
-                  <div className="space-y-4">
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                      <Card className="rounded-2xl border-slate-200 shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2 text-slate-700">
-                            <Sparkles className="h-4 w-4" />
-                            <span className="text-sm font-semibold">Визуален профил</span>
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-slate-500">
-                            Един и същ GLB asset може да живее в конфигуратор, админ екран, оферта и viewer mode.
-                          </p>
-                        </CardContent>
-                      </Card>
+    .preview-top-badges .badge {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.08);
+    }
 
-                      <Card className="rounded-2xl border-slate-200 shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2 text-slate-700">
-                            <ShieldCheck className="h-4 w-4" />
-                            <span className="text-sm font-semibold">Бизнес контрол</span>
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-slate-500">
-                            Мениджърите редактират стойности. Инженерният модел само подава истината за конфигурацията.
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
+    .preview-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 500px;
+      border-radius: 28px;
+      background:
+        linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px),
+        rgba(255,255,255,0.04);
+      background-size: 38px 38px, 38px 38px, auto;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      backdrop-filter: blur(4px);
+    }
 
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
-                        <Palette className="h-4 w-4" /> Активен finish
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {colorOptions.map((item) => (
-                          <button
-                            key={item.id}
-                            onClick={() => setColor(item.id)}
-                            className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm transition ${
-                              color === item.id
-                                ? 'border-slate-900 bg-slate-900 text-white'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                            }`}
-                          >
-                            <span
-                              className="h-4 w-4 rounded-full border border-black/10"
-                              style={{ backgroundColor: item.hex }}
-                            />
-                            {item.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+    .preview-floor {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      bottom: 16%;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      filter: blur(2px);
+    }
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.08 }}
-          className="space-y-4"
-        >
-          <Card className="rounded-3xl border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
-                <Settings2 className="h-5 w-5" />
-                Редактор на опцията
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <Label>Тип захват</Label>
-                <Select value={hook} onValueChange={setHook}>
-                  <SelectTrigger className="h-11 rounded-2xl">
-                    <SelectValue placeholder="Избери захват" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hookOptions.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-500">{hookData.note}</p>
-              </div>
+    .product {
+      position: absolute;
+      inset: 0;
+    }
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Ролки</Label>
-                  <Select value={roller} onValueChange={setRoller}>
-                    <SelectTrigger className="h-11 rounded-2xl">
-                      <SelectValue placeholder="Избери ролки" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rollerOptions.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+    .body-box {
+      position: absolute;
+      left: 16%;
+      right: 16%;
+      bottom: 22%;
+      height: 92px;
+      border-radius: 28px;
+      background: #64748b;
+      box-shadow: 0 30px 50px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
 
-                <div className="space-y-2">
-                  <Label>Тип дъно</Label>
-                  <Select value={floor} onValueChange={setFloor}>
-                    <SelectTrigger className="h-11 rounded-2xl">
-                      <SelectValue placeholder="Избери дъно" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {floorOptions.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+    .side-box {
+      position: absolute;
+      left: 28%;
+      width: 44%;
+      top: 24%;
+      height: 170px;
+      border-radius: 30px;
+      background: linear-gradient(180deg, var(--selected-color), #475569);
+      box-shadow: 0 24px 50px rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.10);
+      transition: background 0.25s ease;
+    }
 
-              <div className="space-y-2">
-                <Label>Дължина на изделието</Label>
-                <div className="relative">
-                  <Input
-                    value={length}
-                    onChange={(e) => setLength(e.target.value)}
-                    className="h-11 rounded-2xl pr-14"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400">mm</span>
-                </div>
-              </div>
+    .front-module {
+      position: absolute;
+      right: 14%;
+      top: 31%;
+      width: 118px;
+      height: 118px;
+      border-radius: 28px;
+      background: rgba(34, 211, 238, 0.14);
+      border: 1px solid rgba(34, 211, 238, 0.24);
+      box-shadow: 0 18px 34px rgba(0,0,0,0.20);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #d5f8ff;
+      font-size: 48px;
+    }
 
-              <Separator />
+    .hook-label,
+    .roller-label {
+      position: absolute;
+      bottom: 18px;
+      background: rgba(0,0,0,0.34);
+      color: #e5eefb;
+      border-radius: 18px;
+      padding: 10px 14px;
+      font-size: 12px;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between rounded-2xl border p-3">
-                  <div>
-                    <div className="font-medium text-slate-900">Печат / брандиране</div>
-                    <div className="text-xs text-slate-500">Лого и визуална подготовка за офертен preview</div>
-                  </div>
-                  <Switch checked={printLogo} onCheckedChange={setPrintLogo} />
-                </div>
+    .hook-label {
+      left: 18px;
+    }
 
-                <div className="flex items-center justify-between rounded-2xl border p-3">
-                  <div>
-                    <div className="font-medium text-slate-900">AutoDocs пакет</div>
-                    <div className="text-xs text-slate-500">PDF / DXF / спецификация при потвърждение</div>
-                  </div>
-                  <Switch checked={autoDocs} onCheckedChange={setAutoDocs} />
-                </div>
+    .roller-label {
+      right: 18px;
+    }
 
-                <div className="flex items-center justify-between rounded-2xl border p-3">
-                  <div>
-                    <div className="font-medium text-slate-900">Photo mode preview</div>
-                    <div className="text-xs text-slate-500">По-качествено snapshot изображение при поискване</div>
-                  </div>
-                  <Switch checked={premiumPreview} onCheckedChange={setPremiumPreview} />
-                </div>
-              </div>
+    .wheel {
+      position: absolute;
+      bottom: 17%;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 5px solid #cbd5e1;
+      background: radial-gradient(circle at 35% 35%, #94a3b8, #475569 70%);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.22);
+      transition: opacity 0.2s ease;
+    }
 
-              <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
-                <div className="mb-2 flex items-center gap-2 font-medium text-slate-900">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Екранът е фокусиран само върху релевантните полета за тази опция.
-                </div>
-                Без таблица, без шум, без риск да се изгуби човекът в 40 колони.
-              </div>
-            </CardContent>
-          </Card>
+    .wheel::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.14);
+    }
 
-          <Card className="rounded-3xl border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
-                <CircleDollarSign className="h-5 w-5" />
-                Ефект от избора
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-slate-900 p-4 text-white">
-                  <div className="text-xs uppercase tracking-wide text-slate-300">Крайна цена</div>
-                  <div className="mt-2 text-2xl font-semibold">{pricing.final.toFixed(0)} лв</div>
-                </div>
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-                  <div className="text-xs uppercase tracking-wide text-slate-400">Себестойност</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{pricing.subtotal.toFixed(0)} лв</div>
-                </div>
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
-                    <Clock3 className="h-3.5 w-3.5" /> Труд
-                  </div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{pricing.labor.toFixed(1)} ч</div>
-                </div>
-              </div>
+    .wheel-1 { left: 10%; }
+    .wheel-2 { left: 24%; }
+    .wheel-3 { right: 24%; }
+    .wheel-4 { right: 10%; }
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="font-semibold text-slate-900">Разбивка</div>
-                  <Badge variant="secondary" className="rounded-full">
-                    Manager editable
-                  </Badge>
-                </div>
+    .right-side-panel {
+      padding: 20px;
+      border-left: 1px solid var(--line);
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-                <div className="space-y-2 text-sm">
-                  <Row label="Базово изделие" value={`${pricing.base.toFixed(0)} лв`} />
-                  <Row label={hookData.name} value={`+${hookData.price.toFixed(0)} лв`} />
-                  <Row label={rollerData.name} value={`${rollerData.delta >= 0 ? '+' : ''}${rollerData.delta.toFixed(0)} лв`} />
-                  <Row label={colorData.name} value={`${colorData.delta >= 0 ? '+' : ''}${colorData.delta.toFixed(0)} лв`} />
-                  <Row label={floorData.name} value={`${floorData.delta >= 0 ? '+' : ''}${floorData.delta.toFixed(0)} лв`} />
-                  <Row label="Дължина / надбавка" value={`+${pricing.lengthDelta.toFixed(0)} лв`} />
-                  <Row label="Печат / branding" value={`${pricing.printDelta >= 0 ? '+' : ''}${pricing.printDelta.toFixed(0)} лв`} />
-                  <Row label="Photo mode" value={`${pricing.previewDelta >= 0 ? '+' : ''}${pricing.previewDelta.toFixed(0)} лв`} />
-                  <Separator className="my-2" />
-                  <Row label="Марж / търговска логика" value={`+${pricing.managerMargin.toFixed(0)} лв`} strong />
-                </div>
-              </div>
+    .mini-info {
+      display: grid;
+      gap: 12px;
+    }
 
-              <div className="flex flex-wrap gap-2">
-                <Button className="rounded-2xl bg-slate-900 hover:bg-slate-800">
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Потвърди конфигурацията
-                </Button>
-                <Button variant="outline" className="rounded-2xl bg-white">
-                  <ChevronDown className="mr-2 h-4 w-4" />
-                  Отвори разширени правила
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+    .mini-box {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .mini-box-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .mini-box p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .color-picker {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #f8fafc;
+      padding: 14px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .color-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .color-chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 18px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .color-chip.active {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.10);
+      flex: 0 0 auto;
+    }
+
+    .sidebar-card {
+      background: #fff;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .sidebar-title {
+      margin: 0 0 14px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      min-height: 48px;
+      padding: 0 14px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .switch-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .switch-card h4 {
+      margin: 0 0 4px;
+      font-size: 15px;
+    }
+
+    .switch-card p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .switch {
+      position: relative;
+      width: 54px;
+      height: 32px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 999px;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      left: 4px;
+      top: 4px;
+      border-radius: 50%;
+      background: #fff;
+      transition: 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+    }
+
+    .switch input:checked + .slider {
+      background: #0f172a;
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
+    .hint-box {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #475569;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .metric.dark {
+      background: #0f172a;
+      color: #fff;
+    }
+
+    .metric.light {
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .metric-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: inherit;
+      opacity: 0.72;
+    }
+
+    .metric-value {
+      margin-top: 10px;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .breakdown {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .breakdown-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    .row strong {
+      font-weight: 800;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line);
+      margin: 8px 0;
+    }
+
+    .bottom-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1180px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-body {
+        grid-template-columns: 1fr;
+      }
+
+      .right-side-panel {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 12px;
+      }
+
+      .hero-header {
+        padding: 18px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+
+      .preview-wrap {
+        padding: 12px;
+      }
+
+      .preview-frame {
+        min-height: 360px;
+      }
+
+      .side-box {
+        left: 18%;
+        width: 50%;
+        top: 27%;
+        height: 120px;
+      }
+
+      .front-module {
+        width: 88px;
+        height: 88px;
+        top: 34%;
+        right: 10%;
+        font-size: 34px;
+      }
+
+      .wheel {
+        width: 54px;
+        height: 54px;
+      }
+
+      .metrics,
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar-card {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="card">
+      <div class="hero-header">
+        <div>
+          <div class="badge-row">
+            <span class="badge badge-accent">DP Design Pilot</span>
+            <span class="badge">Option Editor</span>
+            <span class="badge">UX Showcase</span>
+          </div>
+          <h1 class="title">ABTRPR / Захват и ходова конфигурация</h1>
+          <p class="subtitle">
+            Един фокусиран екран за избор, визуализация и бизнес ефект — без шум, без тежки таблици, с усещане за съвременен конфигуратор.
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn btn-light" type="button">Viewer mode</button>
+          <button class="btn btn-light" type="button">Генерирай изображение</button>
+          <button class="btn btn-dark" type="button">Запази опцията</button>
+        </div>
       </div>
-    </div>
-  );
-}
 
-function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div className={strong ? 'font-semibold text-slate-900' : 'text-slate-600'}>{label}</div>
-      <div className={strong ? 'font-semibold text-slate-900' : 'font-medium text-slate-800'}>{value}</div>
-    </div>
-  );
-}
+      <div class="hero-body">
+        <div class="preview-wrap">
+          <div class="preview-top-badges">
+            <span class="badge">Multi-GLB scene</span>
+            <span class="badge">Live modules</span>
+            <span class="badge">Business-aware UI</span>
+          </div>
+
+          <div class="preview-frame">
+            <div class="preview-floor"></div>
+
+            <div class="product">
+              <div class="side-box" id="sideBox"></div>
+              <div class="body-box"></div>
+              <div class="front-module">◫</div>
+
+              <div class="wheel wheel-1 roller"></div>
+              <div class="wheel wheel-2 roller"></div>
+              <div class="wheel wheel-3 roller"></div>
+              <div class="wheel wheel-4 roller"></div>
+
+              <div class="hook-label">
+                Active hook:
+                <strong id="hookPreviewText">H-образен DIN2</strong>
+              </div>
+
+              <div class="roller-label">
+                Roller set:
+                <strong id="rollerPreviewText">Стоманени ролки</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="right-side-panel">
+          <div class="mini-info">
+            <div class="mini-box">
+              <h3 class="mini-box-title">Визуален профил</h3>
+              <p>
+                Един и същ GLB asset може да живее в конфигуратор, админ екран, оферта и viewer mode.
+              </p>
+            </div>
+
+            <div class="mini-box">
+              <h3 class="mini-box-title">Бизнес контрол</h3>
+              <p>
+                Мениджърите редактират стойности. Инженерният модел подава истината за конфигурацията.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-picker">
+            <h3 class="section-title">Активен finish</h3>
+            <div class="color-row" id="colorButtons"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section>
+      <div class="sidebar-card">
+        <h2 class="sidebar-title">Редактор на опцията</h2>
+
+        <div class="field-group">
+          <label for="hookSelect">Тип захват</label>
+          <select id="hookSelect"></select>
+          <div class="footer-note" id="hookNote"></div>
+        </div>
+
+        <div class="two-col">
+          <div class="field-group">
+            <label for="rollerSelect">Ролки</label>
+            <select id="rollerSelect"></select>
+          </div>
+
+          <div class="field-group">
+            <label for="floorSelect">Тип дъно</label>
+            <select id="floorSelect"></select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="lengthInput">Дължина на изделието</label>
+          <input id="lengthInput" type="number" step="1" min="4000" value="6200" />
+        </div>
+
+        <div class="switch-card">
+          <div>
+            <h4>Печат / брандиране</h4>
+            <p>Лого и визуална подготовка за офертен preview.</p>
+          </div>
+          <label class="switch">
+            <input id="printLogo" type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-card">
+          <div>
+            <h4>AutoDocs пакет</h4>
+            <p>PDF / DXF / спецификация при потвърждение.</p>
+          </div>
+          <label class="switch">
+            <input id="autoDocs" type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-card">
+          <div>
+            <h4>Photo mode preview</h4>
+            <p>По-качествено snapshot изображение при поискване.</p>
+          </div>
+          <label class="switch">
+            <input id="photoMode" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="hint-box">
+          Екранът е фокусиран само върху релевантните полета за тази опция. Няма таблица, няма шум, няма 40 колони.
+        </div>
+      </div>
+
+      <div class="sidebar-card" style="margin-top: 20px;">
+        <h2 class="sidebar-title">Ефект от избора</h2>
+
+        <div class="metrics">
+          <div class="metric dark">
+            <div class="metric-label">Крайна цена</div>
+            <div class="metric-value" id="finalPrice">0 лв</div>
+          </div>
+
+          <div class="metric light">
+            <div class="metric-label">Себестойност</div>
+            <div class="metric-value" id="subtotalPrice">0 лв</div>
+          </div>
+
+          <div class="metric light">
+            <div class="metric-label">Труд</div>
+            <div class="metric-value" id="laborHours">0 ч</div>
+          </div>
+        </div>
+
+        <div class="breakdown">
+          <div class="breakdown-head">
+            <strong>Разбивка</strong>
+            <span class="pill">Manager editable</span>
+          </div>
+
+          <div class="row"><span>Базово изделие</span><span id="rowBase">0 лв</span></div>
+          <div class="row"><span id="rowHookLabel">Захват</span><span id="rowHook">0 лв</span></div>
+          <div class="row"><span id="rowRollerLabel">Ролки</span><span id="rowRoller">0 лв</span></div>
+          <div class="row"><span id="rowColorLabel">Цвят</span><span id="rowColor">0 лв</span></div>
+          <div class="row"><span id="rowFloorLabel">Дъно</span><span id="rowFloor">0 лв</span></div>
+          <div class="row"><span>Дължина / надбавка</span><span id="rowLength">0 лв</span></div>
+          <div class="row"><span>Печат / branding</span><span id="rowPrint">0 лв</span></div>
+          <div class="row"><span>Photo mode</span><span id="rowPhoto">0 лв</span></div>
+          <div class="divider"></div>
+          <div class="row"><strong>Марж / търговска логика</strong><strong id="rowMargin">0 лв</strong></div>
+        </div>
+
+        <div class="bottom-actions">
+          <button class="btn btn-dark" type="button">Потвърди конфигурацията</button>
+          <button class="btn btn-light" type="button">Отвори разширени правила</button>
+        </div>
+
+        <div class="footer-note">
+          Това е UX mockup за срещи и обсъждане на flow, layout и business logic presentation. Не е production екран.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const hookOptions = [
+      { id: 'din2_h', name: 'H-образен DIN2', price: 1850, labor: 3.2, note: 'Стандартен и най-търсен вариант.' },
+      { id: 'din2_round', name: 'Кръгъл DIN2', price: 1690, labor: 2.8, note: 'По-икономична конфигурация.' },
+      { id: 'din3_heavy', name: 'DIN3 Heavy Duty', price: 2490, labor: 4.4, note: 'За по-тежки натоварвания.' }
+    ];
+
+    const rollerOptions = [
+      { id: 'steel', name: 'Стоманени ролки', delta: 0 },
+      { id: 'polyamide', name: 'Полиамидни ролки', delta: 420 },
+      { id: 'polyurethane', name: 'Полиуретанови ролки', delta: 560 }
+    ];
+
+    const colorOptions = [
+      { id: 'ral9005', name: 'RAL 9005', hex: '#0f172a', delta: 0 },
+      { id: 'ral7016', name: 'RAL 7016', hex: '#334155', delta: 95 },
+      { id: 'ral3020', name: 'RAL 3020', hex: '#dc2626', delta: 140 },
+      { id: 'galvanized', name: 'Raw / Galvanized', hex: '#9ca3af', delta: -80 }
+    ];
+
+    const floorOptions = [
+      { id: 'steel', name: 'Steel floor', delta: 0 },
+      { id: 'plywood', name: 'Plywood floor', delta: -220 },
+      { id: 'hybrid', name: 'Hybrid floor', delta: 160 }
+    ];
+
+    const els = {
+      hookSelect: document.getElementById('hookSelect'),
+      rollerSelect: document.getElementById('rollerSelect'),
+      floorSelect: document.getElementById('floorSelect'),
+      lengthInput: document.getElementById('lengthInput'),
+      printLogo: document.getElementById('printLogo'),
+      autoDocs: document.getElementById('autoDocs'),
+      photoMode: document.getElementById('photoMode'),
+      hookNote: document.getElementById('hookNote'),
+      hookPreviewText: document.getElementById('hookPreviewText'),
+      rollerPreviewText: document.getElementById('rollerPreviewText'),
+      colorButtons: document.getElementById('colorButtons'),
+      sideBox: document.getElementById('sideBox'),
+      finalPrice: document.getElementById('finalPrice'),
+      subtotalPrice: document.getElementById('subtotalPrice'),
+      laborHours: document.getElementById('laborHours'),
+      rowBase: document.getElementById('rowBase'),
+      rowHookLabel: document.getElementById('rowHookLabel'),
+      rowHook: document.getElementById('rowHook'),
+      rowRollerLabel: document.getElementById('rowRollerLabel'),
+      rowRoller: document.getElementById('rowRoller'),
+      rowColorLabel: document.getElementById('rowColorLabel'),
+      rowColor: document.getElementById('rowColor'),
+      rowFloorLabel: document.getElementById('rowFloorLabel'),
+      rowFloor: document.getElementById('rowFloor'),
+      rowLength: document.getElementById('rowLength'),
+      rowPrint: document.getElementById('rowPrint'),
+      rowPhoto: document.getElementById('rowPhoto'),
+      rowMargin: document.getElementById('rowMargin')
+    };
+
+    const state = {
+      hook: 'din2_h',
+      roller: 'steel',
+      color: 'ral7016',
+      floor: 'steel',
+      length: 6200,
+      printLogo: true,
+      autoDocs: true,
+      photoMode: false
+    };
+
+    function formatBgn(value) {
+      return `${Math.round(value)} лв`;
+    }
+
+    function formatSignedBgn(value) {
+      return `${value >= 0 ? '+' : ''}${Math.round(value)} лв`;
+    }
+
+    function formatHours(value) {
+      return `${value.toFixed(1)} ч`;
+    }
+
+    function populateSelect(selectEl, options) {
+      selectEl.innerHTML = options.map(option =>
+        `<option value="${option.id}">${option.name}</option>`
+      ).join('');
+    }
+
+    function renderColorButtons() {
+      els.colorButtons.innerHTML = colorOptions.map(color => `
+        <button
+          class="color-chip ${state.color === color.id ? 'active' : ''}"
+          type="button"
+          data-color-id="${color.id}"
+        >
+          <span class="swatch" style="background:${color.hex}"></span>
+          ${color.name}
+        </button>
+      `).join('');
+
+      els.colorButtons.querySelectorAll('[data-color-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.color = btn.getAttribute('data-color-id');
+          render();
+        });
+      });
+    }
+
+    function getSelectedData() {
+      return {
+        hook: hookOptions.find(x => x.id === state.hook),
+        roller: rollerOptions.find(x => x.id === state.roller),
+        color: colorOptions.find(x => x.id === state.color),
+        floor: floorOptions.find(x => x.id === state.floor)
+      };
+    }
+
+    function calculate() {
+      const selected = getSelectedData();
+      const base = 28450;
+      const lengthDelta = Math.max(0, (Number(state.length) || 6200) - 6200) * 1.85;
+      const printDelta = state.printLogo ? 380 : 0;
+      const photoDelta = state.photoMode ? 90 : 0;
+
+      const subtotal =
+        base +
+        selected.hook.price +
+        selected.roller.delta +
+        selected.color.delta +
+        selected.floor.delta +
+        lengthDelta +
+        printDelta +
+        photoDelta;
+
+      const margin = subtotal * 0.12;
+      const final = subtotal + margin;
+      const labor =
+        34 +
+        selected.hook.labor +
+        (state.printLogo ? 0.8 : 0) +
+        (state.roller === 'polyurethane' ? 0.6 : 0);
+
+      return {
+        selected,
+        base,
+        lengthDelta,
+        printDelta,
+        photoDelta,
+        subtotal,
+        margin,
+        final,
+        labor
+      };
+    }
+
+    function renderPreview(selected) {
+      els.sideBox.style.setProperty('--selected-color', selected.color.hex);
+      els.sideBox.style.background = `linear-gradient(180deg, ${selected.color.hex}, #475569)`;
+      els.hookPreviewText.textContent = selected.hook.name;
+      els.rollerPreviewText.textContent = selected.roller.name;
+
+      document.querySelectorAll('.roller').forEach(wheel => {
+        wheel.style.opacity = state.roller ? '1' : '1';
+      });
+    }
+
+    function render() {
+      els.hookSelect.value = state.hook;
+      els.rollerSelect.value = state.roller;
+      els.floorSelect.value = state.floor;
+      els.lengthInput.value = state.length;
+      els.printLogo.checked = state.printLogo;
+      els.autoDocs.checked = state.autoDocs;
+      els.photoMode.checked = state.photoMode;
+
+      renderColorButtons();
+
+      const result = calculate();
+      const { selected } = result;
+
+      els.hookNote.textContent = selected.hook.note;
+
+      renderPreview(selected);
+
+      els.finalPrice.textContent = formatBgn(result.final);
+      els.subtotalPrice.textContent = formatBgn(result.subtotal);
+      els.laborHours.textContent = formatHours(result.labor);
+
+      els.rowBase.textContent = formatBgn(result.base);
+
+      els.rowHookLabel.textContent = selected.hook.name;
+      els.rowHook.textContent = formatSignedBgn(selected.hook.price);
+
+      els.rowRollerLabel.textContent = selected.roller.name;
+      els.rowRoller.textContent = formatSignedBgn(selected.roller.delta);
+
+      els.rowColorLabel.textContent = selected.color.name;
+      els.rowColor.textContent = formatSignedBgn(selected.color.delta);
+
+      els.rowFloorLabel.textContent = selected.floor.name;
+      els.rowFloor.textContent = formatSignedBgn(selected.floor.delta);
+
+      els.rowLength.textContent = formatSignedBgn(result.lengthDelta);
+      els.rowPrint.textContent = formatSignedBgn(result.printDelta);
+      els.rowPhoto.textContent = formatSignedBgn(result.photoDelta);
+      els.rowMargin.textContent = formatSignedBgn(result.margin);
+    }
+
+    function bind() {
+      populateSelect(els.hookSelect, hookOptions);
+      populateSelect(els.rollerSelect, rollerOptions);
+      populateSelect(els.floorSelect, floorOptions);
+
+      els.hookSelect.addEventListener('change', (e) => {
+        state.hook = e.target.value;
+        render();
+      });
+
+      els.rollerSelect.addEventListener('change', (e) => {
+        state.roller = e.target.value;
+        render();
+      });
+
+      els.floorSelect.addEventListener('change', (e) => {
+        state.floor = e.target.value;
+        render();
+      });
+
+      els.lengthInput.addEventListener('input', (e) => {
+        state.length = Number(e.target.value || 6200);
+        render();
+      });
+
+      els.printLogo.addEventListener('change', (e) => {
+        state.printLogo = e.target.checked;
+        render();
+      });
+
+      els.autoDocs.addEventListener('change', (e) => {
+        state.autoDocs = e.target.checked;
+        render();
+      });
+
+      els.photoMode.addEventListener('change', (e) => {
+        state.photoMode = e.target.checked;
+        render();
+      });
+    }
+
+    bind();
+    render();
+  </script>
+</body>
+</html>
